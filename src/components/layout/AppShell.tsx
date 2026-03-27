@@ -3,13 +3,14 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
+import { Home, Compass, PenLine, Star, User } from 'lucide-react'
 
 const NAV_ITEMS = [
-  { href: '/today',     label: 'Home',     emoji: '🏠' },
-  { href: '/math',      label: 'Explore',  emoji: '🔭' },
-  { href: '#',          label: 'Create',   emoji: '✏️' },
-  { href: '/dashboard', label: 'Progress', emoji: '⭐' },
-  { href: '/dashboard', label: 'Me',       emoji: '👤' },
+  { href: '/today',     label: 'Home',     Icon: Home },
+  { href: '/math',      label: 'Explore',  Icon: Compass },
+  { href: '#',          label: 'Create',   Icon: PenLine },
+  { href: '/dashboard', label: 'Progress', Icon: Star },
+  { href: '/dashboard', label: 'Me',       Icon: User },
 ]
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -37,10 +38,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
         <Link
           href="/dashboard"
-          className="w-8 h-8 rounded-full flex items-center justify-center text-sm"
+          className="w-8 h-8 rounded-full flex items-center justify-center"
           style={{ background: '#F0E6F6', color: '#813EA0' }}
         >
-          👤
+          <User size={16} color="#813EA0" />
         </Link>
       </header>
 
@@ -65,6 +66,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           const isActive = item.href !== '#' && (
             pathname === item.href || pathname.startsWith(item.href + '/')
           )
+          const iconColor = isActive ? '#813EA0' : '#4D4350'
           return (
             <Link
               key={item.label}
@@ -77,11 +79,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 item.href === '#' && 'opacity-50 pointer-events-none'
               )}
             >
-              <span
-                className={cn('text-xl transition-transform', isActive && 'scale-110')}
-              >
-                {item.emoji}
-              </span>
+              <item.Icon
+                size={20}
+                color={iconColor}
+                className={cn('transition-transform', isActive && 'scale-110')}
+                strokeWidth={2}
+              />
               <span
                 className="text-[10px] font-semibold"
                 style={{ color: isActive ? '#813EA0' : '#8B6A7A' }}

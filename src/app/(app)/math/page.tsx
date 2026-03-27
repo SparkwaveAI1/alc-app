@@ -6,11 +6,12 @@ import { VelvetCard } from '@/components/alc/VelvetCard'
 import { ProgressBar } from '@/components/alc/ProgressBar'
 import { StatsChip } from '@/components/alc/StatsChip'
 import Link from 'next/link'
+import { BookOpen, Target, Sparkles, Calculator, Check } from 'lucide-react'
 
 const ACTIVITY_TYPES = [
-  { emoji: '📖', title: 'Study', color: '#F7D8FF', textColor: '#813EA0' },
-  { emoji: '🎯', title: 'Practice', color: '#FFE4E0', textColor: '#A43B2D' },
-  { emoji: '✨', title: 'Create', color: '#E6F4F0', textColor: '#00694D' },
+  { Icon: BookOpen,  title: 'Study',    color: '#F7D8FF', textColor: '#813EA0', iconColor: '#813EA0' },
+  { Icon: Target,    title: 'Practice', color: '#FFE4E0', textColor: '#A43B2D', iconColor: '#A43B2D' },
+  { Icon: Sparkles,  title: 'Create',   color: '#E6F4F0', textColor: '#00694D', iconColor: '#00694D' },
 ]
 
 export default function MathPage() {
@@ -25,16 +26,22 @@ export default function MathPage() {
   return (
     <div className="min-h-screen pb-24" style={{ background: '#FFF8F1' }}>
 
-      {/* Hero — lavender gradient */}
+      {/* Hero — lavender gradient, rounded bottom corners */}
       <div
         className="px-4 pt-6 pb-8"
         style={{
           background: 'linear-gradient(160deg, #813EA0 0%, #9C58BB 60%, #C084D4 100%)',
+          borderRadius: '0 0 2rem 2rem',
         }}
       >
         <div className="max-w-md mx-auto space-y-4">
           <div className="flex items-center gap-3">
-            <span className="text-4xl">📐</span>
+            <div
+              className="w-12 h-12 rounded-2xl flex items-center justify-center"
+              style={{ background: 'rgba(255,255,255,0.2)' }}
+            >
+              <Calculator size={28} color="white" strokeWidth={2} />
+            </div>
             <div>
               <p className="text-xs font-medium" style={{ color: 'rgba(255,255,255,0.75)' }}>
                 Grade 4 · Common Core
@@ -97,7 +104,7 @@ export default function MathPage() {
                   boxShadow: '0px 4px 12px rgba(45, 37, 64, 0.06)',
                 }}
               >
-                <span className="text-2xl">{type.emoji}</span>
+                <type.Icon size={24} color={type.iconColor} strokeWidth={2} />
                 <span
                   className="text-xs font-bold"
                   style={{ color: type.textColor, fontFamily: 'var(--font-heading)' }}
@@ -178,7 +185,7 @@ export default function MathPage() {
                                 status === 'practicing' ? '#813EA0' : '#8B6A7A',
                             }}
                           >
-                            {status === 'mastered' ? '✓ ' : ''}{std.standard_code}
+                            {status === 'mastered' && <Check size={10} strokeWidth={3} />}{std.standard_code}
                           </span>
                         </Link>
                       )

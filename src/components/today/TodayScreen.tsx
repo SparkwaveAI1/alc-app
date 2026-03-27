@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { Landmark, PenLine, Calculator, BookOpen, Paintbrush, FileText, User } from 'lucide-react'
 import { VelvetCard } from '@/components/alc/VelvetCard'
 import { VelvetButton } from '@/components/alc/VelvetButton'
 import { ProgressBar } from '@/components/alc/ProgressBar'
@@ -13,7 +14,9 @@ interface TodayScreenProps {
 
 const DEMO_ACTIVITIES = [
   {
-    emoji: '📜',
+    Icon: Landmark,
+    iconBg: '#FFF0EE',
+    iconColor: '#FD7D69',
     title: 'Ancient Egypt',
     subtitle: 'History & Culture',
     time: '~20 min',
@@ -22,7 +25,9 @@ const DEMO_ACTIVITIES = [
     href: '#',
   },
   {
-    emoji: '✏️',
+    Icon: PenLine,
+    iconBg: '#F0E6F6',
+    iconColor: '#813EA0',
     title: 'Creative Writing',
     subtitle: 'Story Workshop',
     time: '~15 min',
@@ -31,7 +36,9 @@ const DEMO_ACTIVITIES = [
     href: '#',
   },
   {
-    emoji: '🔢',
+    Icon: Calculator,
+    iconBg: '#E6F4F0',
+    iconColor: '#00694D',
     title: 'Math Patterns',
     subtitle: 'Grade 4 · Fractions',
     time: '~25 min',
@@ -42,9 +49,9 @@ const DEMO_ACTIVITIES = [
 ]
 
 const QUICK_CREATE = [
-  { label: '📔 Journal', color: 'lavender' as const },
-  { label: '🎨 Sketch', color: 'coral' as const },
-  { label: '📝 Note', color: 'mint' as const },
+  { label: 'Journal',  Icon: BookOpen,   color: 'lavender' as const, iconColor: '#813EA0', bg: '#F0E6F6' },
+  { label: 'Sketch',   Icon: Paintbrush, color: 'coral' as const,    iconColor: '#A43B2D', bg: '#FFF0EE' },
+  { label: 'Note',     Icon: FileText,   color: 'mint' as const,     iconColor: '#00694D', bg: '#E6F4F0' },
 ]
 
 function getGreeting() {
@@ -81,10 +88,10 @@ export function TodayScreen({ learner }: TodayScreenProps) {
             </h1>
           </div>
           <div
-            className="w-11 h-11 rounded-full flex items-center justify-center text-xl"
+            className="w-11 h-11 rounded-full flex items-center justify-center"
             style={{ background: '#F0E6F6' }}
           >
-            👤
+            <User size={20} color="#813EA0" strokeWidth={2} />
           </div>
         </div>
 
@@ -133,14 +140,10 @@ export function TodayScreen({ learner }: TodayScreenProps) {
               <VelvetCard accent={activity.color} className="p-4">
                 <div className="flex items-start gap-3">
                   <div
-                    className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0"
-                    style={{
-                      background:
-                        activity.color === 'coral' ? '#FFF0EE' :
-                        activity.color === 'lavender' ? '#F0E6F6' : '#E6F4F0',
-                    }}
+                    className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
+                    style={{ background: activity.iconBg }}
                   >
-                    {activity.emoji}
+                    <activity.Icon size={24} color={activity.iconColor} strokeWidth={2} />
                   </div>
                   <div className="flex-1 min-w-0 space-y-1.5">
                     <div className="flex items-center justify-between gap-2">
@@ -174,17 +177,14 @@ export function TodayScreen({ learner }: TodayScreenProps) {
             {QUICK_CREATE.map((item) => (
               <button
                 key={item.label}
-                className="px-4 py-2.5 text-sm font-semibold transition-all hover:scale-105 active:scale-95"
+                className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold transition-all hover:scale-105 active:scale-95"
                 style={{
                   borderRadius: '9999px',
-                  background:
-                    item.color === 'lavender' ? '#F0E6F6' :
-                    item.color === 'coral' ? '#FFF0EE' : '#E6F4F0',
-                  color:
-                    item.color === 'lavender' ? '#813EA0' :
-                    item.color === 'coral' ? '#A43B2D' : '#00694D',
+                  background: item.bg,
+                  color: item.iconColor,
                 }}
               >
+                <item.Icon size={15} color={item.iconColor} strokeWidth={2} />
                 {item.label}
               </button>
             ))}
@@ -197,7 +197,7 @@ export function TodayScreen({ learner }: TodayScreenProps) {
             className="text-base font-bold"
             style={{ fontFamily: 'var(--font-heading)', color: '#2D1B35' }}
           >
-            📝 What did you learn today?
+            What did you learn today?
           </h3>
           <textarea
             placeholder="I learned about fractions today... it was cool because..."
@@ -211,7 +211,7 @@ export function TodayScreen({ learner }: TodayScreenProps) {
               fontFamily: 'var(--font-sans)',
             }}
           />
-          <VelvetButton variant="primary">Save Entry 💫</VelvetButton>
+          <VelvetButton variant="primary">Save Entry ✨</VelvetButton>
         </VelvetCard>
 
       </div>
