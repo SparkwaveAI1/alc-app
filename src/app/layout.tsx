@@ -1,16 +1,18 @@
 import type { Metadata } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
+import { Plus_Jakarta_Sans, Be_Vietnam_Pro } from 'next/font/google'
 import './globals.css'
 import BottomNav from '@/components/BottomNav'
 
-const geistSans = Geist({
-  variable: '--font-sans',
+const plusJakarta = Plus_Jakarta_Sans({
+  variable: '--font-display',
   subsets: ['latin'],
+  weight: ['500', '600', '700', '800'],
 })
 
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
+const beVietnam = Be_Vietnam_Pro({
+  variable: '--font-body',
   subsets: ['latin'],
+  weight: ['400', '500', '600'],
 })
 
 export const metadata: Metadata = {
@@ -25,8 +27,8 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <main className="pb-20">
+      <body className={`${plusJakarta.variable} ${beVietnam.variable} antialiased`} style={{ background: '#FFF8F1', fontFamily: 'var(--font-body), Be Vietnam Pro, sans-serif' }}>
+        <main style={{ paddingBottom: 80 }}>
           {children}
         </main>
         <BottomNav />
