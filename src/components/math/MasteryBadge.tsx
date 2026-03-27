@@ -1,25 +1,22 @@
 'use client'
 
-import { Badge } from '@/components/ui/badge'
-
 type SkillStatus = 'not_started' | 'practicing' | 'mastered'
 
 interface MasteryBadgeProps {
   status: SkillStatus
 }
 
-const STATUS_CONFIG: Record<SkillStatus, { label: string; icon: string; variant: 'default' | 'secondary' | 'outline' }> = {
-  not_started: { label: 'Not Started', icon: '🔘', variant: 'outline' },
-  practicing: { label: 'Practicing', icon: '🟡', variant: 'secondary' },
-  mastered: { label: 'Mastered', icon: '✅', variant: 'default' },
+const STATUS_CONFIG: Record<SkillStatus, { label: string; icon: string; chipClass: string }> = {
+  not_started: { label: 'Not Started', icon: '🔘', chipClass: 'vs-chip vs-chip-muted' },
+  practicing:  { label: 'Practicing',  icon: '🟡', chipClass: 'vs-chip vs-chip-amber' },
+  mastered:    { label: 'Mastered',    icon: '✅', chipClass: 'vs-chip vs-chip-accent' },
 }
 
 export function MasteryBadge({ status }: MasteryBadgeProps) {
   const config = STATUS_CONFIG[status]
   return (
-    <Badge variant={config.variant} className="gap-1 text-xs">
-      <span>{config.icon}</span>
-      {config.label}
-    </Badge>
+    <span className={`${config.chipClass} text-xs`}>
+      {config.icon} {config.label}
+    </span>
   )
 }

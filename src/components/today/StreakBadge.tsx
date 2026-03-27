@@ -5,10 +5,17 @@ interface StreakBadgeProps {
 }
 
 export function StreakBadge({ days }: StreakBadgeProps) {
+  if (days === 0) {
+    return (
+      <span className="vs-chip vs-chip-muted text-sm font-semibold">
+        ✨ Start your streak today!
+      </span>
+    )
+  }
+
   return (
-    <div className="inline-flex items-center gap-2 rounded-full bg-orange-100 px-4 py-2 text-orange-700">
-      <span className="text-xl">🔥</span>
-      <span className="font-bold text-lg">{days} day streak</span>
-    </div>
+    <span className="vs-chip vs-chip-secondary text-sm font-bold">
+      🔥 {days} day streak
+    </span>
   )
 }
