@@ -17,12 +17,10 @@ export default function BottomNav() {
   return (
     <nav style={{
       position: 'fixed', bottom: 0, left: 0, right: 0,
-      background: 'rgba(255,255,255,0.95)',
-      backdropFilter: 'blur(16px)',
-      borderTop: '1px solid rgba(209,194,209,0.3)',
+      background: '#FFFFFF',
+      boxShadow: '0 -2px 12px rgba(0,0,0,0.07)',
       display: 'flex', justifyContent: 'space-around', alignItems: 'center',
-      height: 76, zIndex: 50,
-      boxShadow: '0 -4px 24px rgba(129,62,160,0.08)',
+      height: 70, zIndex: 50, paddingBottom: 4,
     }}>
       {tabs.map((tab) => {
         const isActive = tab.href === '/' ? pathname === '/' : pathname.startsWith(tab.href)
@@ -32,17 +30,23 @@ export default function BottomNav() {
             href={tab.href}
             style={{
               display: 'flex', flexDirection: 'column', alignItems: 'center',
-              justifyContent: 'center', gap: 3, width: 64, height: 60,
-              borderRadius: 16, textDecoration: 'none',
-              background: isActive ? 'linear-gradient(135deg, #F7D8FF, #ECC6F5)' : 'transparent',
-              transition: 'all 0.2s',
+              justifyContent: 'center', gap: 2,
+              textDecoration: 'none', width: 60,
             }}
           >
-            <span style={{ fontSize: isActive ? 26 : 22, transition: 'font-size 0.2s' }}>{tab.icon}</span>
+            {/* Icon with active pill */}
+            <div style={{
+              width: 48, height: 32, borderRadius: 12,
+              background: isActive ? '#5B2FD4' : 'transparent',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 20, transition: 'all 0.2s',
+            }}>
+              {tab.icon}
+            </div>
             <span style={{
-              fontSize: 11, fontWeight: isActive ? 700 : 500,
-              color: isActive ? '#813EA0' : '#4D4350',
-              fontFamily: 'var(--font-body)',
+              fontSize: 10, fontWeight: isActive ? 600 : 500,
+              color: isActive ? '#5B2FD4' : '#9E9E9E',
+              fontFamily: "'Be Vietnam Pro', sans-serif",
             }}>{tab.name}</span>
           </Link>
         )

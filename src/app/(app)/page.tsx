@@ -2,240 +2,199 @@
 
 export default function Home() {
   return (
-    <div className="min-h-screen" style={{ background: '#FFF8F1', fontFamily: "'Be Vietnam Pro', sans-serif" }}>
+    <div style={{ minHeight: '100vh', background: '#FFF8F1', fontFamily: "'Be Vietnam Pro', sans-serif" }}>
 
-      {/* === HERO HEADER === */}
+      {/* ===== HERO SECTION ===== */}
       <div style={{
-        background: 'linear-gradient(145deg, #813EA0 0%, #9C58BB 40%, #C084DB 100%)',
-        padding: '0 0 48px 0',
+        background: 'linear-gradient(135deg, #7B2FF2 0%, #9B4DFF 25%, #C74BF7 55%, #FF6B35 85%, #FF8C42 100%)',
+        borderRadius: '0 0 28px 28px',
+        padding: '52px 24px 32px',
         position: 'relative',
         overflow: 'hidden',
       }}>
         {/* Decorative blobs */}
-        <div style={{
-          position: 'absolute', top: -40, right: -40, width: 160, height: 160,
-          borderRadius: '50%', background: 'rgba(255,255,255,0.08)',
-        }} />
-        <div style={{
-          position: 'absolute', top: 60, right: 30, width: 80, height: 80,
-          borderRadius: '50%', background: 'rgba(253,125,105,0.25)',
-        }} />
-        <div style={{
-          position: 'absolute', bottom: 20, left: -20, width: 100, height: 100,
-          borderRadius: '50%', background: 'rgba(141,247,204,0.15)',
-        }} />
+        <div style={{ position: 'absolute', top: -30, right: 60, width: 120, height: 120, borderRadius: '50%', background: 'rgba(232, 64, 251, 0.35)', filter: 'blur(30px)' }} />
+        <div style={{ position: 'absolute', top: 20, right: -20, width: 100, height: 100, borderRadius: '50%', background: 'rgba(255, 112, 67, 0.5)', filter: 'blur(25px)' }} />
+        <div style={{ position: 'absolute', bottom: 10, left: 40, width: 80, height: 80, borderRadius: '50%', background: 'rgba(255, 255, 255, 0.08)', filter: 'blur(15px)' }} />
+        {/* Small decorative dots */}
+        <div style={{ position: 'absolute', top: 48, left: 180, width: 8, height: 8, borderRadius: '50%', background: 'rgba(255,255,255,0.6)' }} />
+        <div style={{ position: 'absolute', top: 30, right: 120, width: 5, height: 5, borderRadius: '50%', background: 'rgba(255,255,255,0.5)' }} />
+        <div style={{ position: 'absolute', bottom: 48, right: 80, width: 6, height: 6, borderRadius: '50%', background: 'rgba(255,255,255,0.4)' }} />
 
-        {/* Top bar */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '52px 24px 0' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div style={{
-              width: 48, height: 48, borderRadius: '50%',
-              background: 'linear-gradient(135deg, #FD7D69, #FFB3A7)',
-              border: '3px solid rgba(255,255,255,0.5)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 22,
-            }}>👧</div>
-            <div>
-              <div style={{ color: 'rgba(255,255,255,0.75)', fontSize: 13, fontWeight: 500 }}>Good morning,</div>
-              <div style={{ color: '#fff', fontSize: 22, fontWeight: 700, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Zoe! 👋</div>
-            </div>
+        {/* Top row: greeting + avatar */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8, position: 'relative', zIndex: 1 }}>
+          <div>
+            <h1 style={{ color: '#fff', fontSize: 28, fontWeight: 800, margin: 0, lineHeight: 1.2, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+              Hi, Nayomi! 👋
+            </h1>
+            <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: 14, fontWeight: 500, margin: '4px 0 0' }}>
+              3 adventures waiting for you today
+            </p>
           </div>
-          <button style={{
-            width: 44, height: 44, borderRadius: '50%',
-            background: 'rgba(255,255,255,0.15)',
-            border: 'none', fontSize: 20, cursor: 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>⚙️</button>
+          {/* Avatar */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+            <div style={{
+              width: 56, height: 56, borderRadius: '50%',
+              background: 'radial-gradient(circle at 35% 35%, #FFB300, #FF8C00)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 28, boxShadow: '0 4px 16px rgba(0,0,0,0.2)',
+            }}>⭐</div>
+            <span style={{ color: '#fff', fontSize: 11, fontWeight: 500 }}>Nayomi</span>
+          </div>
         </div>
 
         {/* Streak badge */}
-        <div style={{ padding: '20px 24px 0' }}>
+        <div style={{ position: 'relative', zIndex: 1, marginTop: 16 }}>
           <div style={{
-            display: 'inline-flex', alignItems: 'center', gap: 8,
-            background: 'linear-gradient(135deg, #FD7D69, #FF9A8A)',
-            padding: '10px 20px', borderRadius: 999,
-            boxShadow: '0 4px 20px rgba(253,125,105,0.45)',
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+            background: 'rgba(255,255,255,0.22)',
+            backdropFilter: 'blur(8px)',
+            borderRadius: 999, padding: '9px 20px',
+            border: '1px solid rgba(255,255,255,0.25)',
           }}>
-            <span style={{ fontSize: 20 }}>🔥</span>
-            <span style={{ color: '#fff', fontWeight: 700, fontSize: 15 }}>7 Day Streak!</span>
+            <span style={{ fontSize: 16 }}>🔥</span>
+            <span style={{ color: '#fff', fontSize: 13, fontWeight: 600 }}>Day 7 Streak — You&apos;re on fire!</span>
           </div>
-        </div>
-
-        {/* Wavy bottom edge */}
-        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0 }}>
-          <svg viewBox="0 0 390 40" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" style={{ display: 'block', width: '100%', height: 40 }}>
-            <path d="M0,20 C80,40 160,0 240,20 C320,40 360,10 390,20 L390,40 L0,40 Z" fill="#FFF8F1" />
-          </svg>
         </div>
       </div>
 
-      {/* === CONTENT === */}
-      <div style={{ padding: '8px 20px 24px' }}>
+      {/* ===== CONTENT AREA ===== */}
+      <div style={{ padding: '24px 20px 120px' }}>
 
-        {/* Aria AI Bubble */}
+        {/* Section header */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+          <h2 style={{ fontSize: 22, fontWeight: 800, color: '#1A1A2E', margin: 0, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            Today&apos;s Adventures ✨
+          </h2>
+          <span style={{ fontSize: 14, fontWeight: 500, color: '#FF8C42', cursor: 'pointer' }}>See all →</span>
+        </div>
+
+        {/* ===== LARGE CARD: Ancient Egypt ===== */}
         <div style={{
-          background: 'linear-gradient(135deg, #F7D8FF, #ECC6F5)',
-          borderRadius: '20px 20px 20px 6px',
-          padding: '16px 18px',
-          marginBottom: 28,
-          boxShadow: '0 6px 24px rgba(129,62,160,0.12)',
-          display: 'flex', alignItems: 'flex-start', gap: 12,
+          width: '100%', borderRadius: 22, overflow: 'hidden',
+          background: 'linear-gradient(135deg, #A67B3D 0%, #C4944A 40%, #D4A355 70%, #C8924A 100%)',
+          padding: '18px 18px 16px',
+          marginBottom: 13, position: 'relative', minHeight: 180,
+          boxShadow: '0 8px 28px rgba(166,123,61,0.35)',
         }}>
+          {/* Pyramid illustration (CSS) */}
+          <div style={{ position: 'absolute', bottom: 0, right: 0, width: 140, height: 90, opacity: 0.25 }}>
+            {/* Large pyramid */}
+            <div style={{
+              position: 'absolute', bottom: 0, right: 20,
+              width: 0, height: 0,
+              borderLeft: '50px solid transparent',
+              borderRight: '50px solid transparent',
+              borderBottom: '70px solid rgba(255,255,255,0.8)',
+            }} />
+            {/* Small pyramid */}
+            <div style={{
+              position: 'absolute', bottom: 0, right: 90,
+              width: 0, height: 0,
+              borderLeft: '28px solid transparent',
+              borderRight: '28px solid transparent',
+              borderBottom: '42px solid rgba(255,255,255,0.6)',
+            }} />
+          </div>
+          {/* Moon */}
+          <div style={{ position: 'absolute', top: 18, right: 22, fontSize: 22, opacity: 0.8 }}>🌙</div>
+
+          {/* Chip */}
           <div style={{
-            width: 36, height: 36, borderRadius: '50%',
-            background: 'linear-gradient(135deg, #813EA0, #9C58BB)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 18, flexShrink: 0,
-          }}>✨</div>
-          <div style={{ flex: 1 }}>
-            <p style={{ color: '#4D4350', fontSize: 14, lineHeight: 1.5, margin: '0 0 10px' }}>
-              Ready to explore something amazing today, Zoe? Your Ancient Egypt adventure continues! 🏛️
-            </p>
-            <button style={{
-              background: 'linear-gradient(135deg, #813EA0, #9C58BB)',
-              color: '#fff', fontWeight: 700, fontSize: 13,
-              padding: '8px 18px', borderRadius: 999, border: 'none',
-              cursor: 'pointer', boxShadow: '0 4px 14px rgba(129,62,160,0.35)',
-            }}>Let's go →</button>
+            display: 'inline-flex', alignItems: 'center', gap: 5,
+            background: 'rgba(255,255,255,0.25)', borderRadius: 9, padding: '4px 10px', marginBottom: 10,
+          }}>
+            <span style={{ fontSize: 11 }}>📜</span>
+            <span style={{ color: '#fff', fontSize: 11, fontWeight: 700, letterSpacing: '0.5px' }}>HISTORY</span>
+          </div>
+
+          {/* Title */}
+          <div style={{ color: '#fff', fontSize: 24, fontWeight: 700, fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 32 }}>
+            Ancient Egypt
+          </div>
+
+          {/* Meta row */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+              <div style={{ width: 16, height: 16, borderRadius: '50%', background: '#4CAF50', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9 }}>⏱</div>
+              <span style={{ color: '#fff', fontSize: 13, fontWeight: 500 }}>20 min</span>
+            </div>
+            <div style={{
+              background: '#fff', borderRadius: 7, padding: '3px 8px',
+              color: '#5D4E37', fontSize: 10, fontWeight: 700, letterSpacing: '0.5px',
+            }}>NEW</div>
           </div>
         </div>
 
-        {/* Today's Learning */}
-        <h2 style={{
-          fontSize: 20, fontWeight: 700, color: '#1E1B17',
-          fontFamily: "'Plus Jakarta Sans', sans-serif",
-          marginBottom: 14,
-        }}>Today's Learning</h2>
+        {/* ===== TWO SMALL CARDS ===== */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 13, marginBottom: 28 }}>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 28 }}>
-
-          {/* Card: Ancient Egypt */}
+          {/* Creative Writing */}
           <div style={{
-            background: '#fff', borderRadius: 24,
-            overflow: 'hidden',
-            boxShadow: '0 8px 32px rgba(253,125,105,0.14)',
-            display: 'flex', flexDirection: 'column',
+            borderRadius: 22, overflow: 'hidden',
+            background: 'linear-gradient(145deg, #4CAF50 0%, #2E7D32 50%, #1B6B2F 100%)',
+            padding: '16px 14px', minHeight: 148,
+            boxShadow: '0 8px 24px rgba(46,125,50,0.3)',
+            position: 'relative',
           }}>
             <div style={{
-              background: 'linear-gradient(135deg, #FD7D69, #FFB89E)',
-              padding: '16px 18px',
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              display: 'inline-flex', alignItems: 'center', gap: 4,
+              background: 'rgba(255,255,255,0.25)', borderRadius: 9, padding: '4px 8px', marginBottom: 8,
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span style={{ fontSize: 28 }}>🏛️</span>
-                <div>
-                  <div style={{ color: '#fff', fontWeight: 700, fontSize: 16, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Ancient Egypt</div>
-                  <div style={{ color: 'rgba(255,255,255,0.8)', fontSize: 12 }}>Pyramids & Pharaohs</div>
-                </div>
-              </div>
-              <div style={{
-                background: 'rgba(255,255,255,0.25)',
-                borderRadius: 999, padding: '4px 10px',
-                color: '#fff', fontSize: 12, fontWeight: 600,
-              }}>20 min</div>
+              <span style={{ fontSize: 10 }}>✍️</span>
+              <span style={{ color: '#fff', fontSize: 10, fontWeight: 700, letterSpacing: '0.5px' }}>WRITING</span>
             </div>
-            <div style={{ padding: '14px 18px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6, fontSize: 12, color: '#4D4350' }}>
-                <span>In progress</span><span>35%</span>
-              </div>
-              <div style={{ height: 8, background: '#F4EDE5', borderRadius: 999, overflow: 'hidden' }}>
-                <div style={{ width: '35%', height: '100%', background: 'linear-gradient(90deg, #FD7D69, #FF9A8A)', borderRadius: 999 }} />
-              </div>
+            <div style={{ color: '#fff', fontSize: 17, fontWeight: 700, fontFamily: "'Plus Jakarta Sans', sans-serif", lineHeight: 1.25 }}>
+              Creative Writing
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 28 }}>
+              <div style={{ width: 14, height: 14, borderRadius: '50%', background: 'rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8 }}>⏱</div>
+              <span style={{ color: '#fff', fontSize: 12, fontWeight: 500 }}>15 min</span>
             </div>
           </div>
 
-          {/* Card: Creative Writing */}
+          {/* World Patterns / Geography */}
           <div style={{
-            background: '#fff', borderRadius: 24,
-            overflow: 'hidden',
-            boxShadow: '0 8px 32px rgba(129,62,160,0.13)',
+            borderRadius: 22, overflow: 'hidden',
+            background: 'linear-gradient(145deg, #FF8A65 0%, #F4511E 50%, #E64A19 100%)',
+            padding: '16px 14px', minHeight: 148,
+            boxShadow: '0 8px 24px rgba(244,81,30,0.3)',
           }}>
             <div style={{
-              background: 'linear-gradient(135deg, #813EA0, #A56CBB)',
-              padding: '16px 18px',
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              display: 'inline-flex', alignItems: 'center', gap: 4,
+              background: 'rgba(255,255,255,0.25)', borderRadius: 9, padding: '4px 8px', marginBottom: 8,
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span style={{ fontSize: 28 }}>✍️</span>
-                <div>
-                  <div style={{ color: '#fff', fontWeight: 700, fontSize: 16, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Creative Writing</div>
-                  <div style={{ color: 'rgba(255,255,255,0.8)', fontSize: 12 }}>Story Starter</div>
-                </div>
-              </div>
-              <div style={{
-                background: 'rgba(255,255,255,0.25)',
-                borderRadius: 999, padding: '4px 10px',
-                color: '#fff', fontSize: 12, fontWeight: 600,
-              }}>15 min</div>
+              <span style={{ fontSize: 10 }}>🌍</span>
+              <span style={{ color: '#fff', fontSize: 10, fontWeight: 700, letterSpacing: '0.5px' }}>GEOGRAPHY</span>
             </div>
-            <div style={{ padding: '14px 18px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6, fontSize: 12, color: '#4D4350' }}>
-                <span>In progress</span><span>60%</span>
-              </div>
-              <div style={{ height: 8, background: '#F4EDE5', borderRadius: 999, overflow: 'hidden' }}>
-                <div style={{ width: '60%', height: '100%', background: 'linear-gradient(90deg, #813EA0, #A56CBB)', borderRadius: 999 }} />
-              </div>
+            <div style={{ color: '#fff', fontSize: 17, fontWeight: 700, fontFamily: "'Plus Jakarta Sans', sans-serif", lineHeight: 1.25 }}>
+              World Patterns
             </div>
-          </div>
-
-          {/* Card: Math Patterns */}
-          <div style={{
-            background: '#fff', borderRadius: 24,
-            overflow: 'hidden',
-            boxShadow: '0 8px 32px rgba(0,105,77,0.12)',
-          }}>
-            <div style={{
-              background: 'linear-gradient(135deg, #00694D, #00A478)',
-              padding: '16px 18px',
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span style={{ fontSize: 28 }}>🔢</span>
-                <div>
-                  <div style={{ color: '#fff', fontWeight: 700, fontSize: 16, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Math Patterns</div>
-                  <div style={{ color: 'rgba(255,255,255,0.8)', fontSize: 12 }}>Number Sequences</div>
-                </div>
-              </div>
-              <div style={{
-                background: 'rgba(255,255,255,0.25)',
-                borderRadius: 999, padding: '4px 10px',
-                color: '#fff', fontSize: 12, fontWeight: 600,
-              }}>10 min</div>
-            </div>
-            <div style={{ padding: '14px 18px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6, fontSize: 12, color: '#4D4350' }}>
-                <span>Just started</span><span>25%</span>
-              </div>
-              <div style={{ height: 8, background: '#F4EDE5', borderRadius: 999, overflow: 'hidden' }}>
-                <div style={{ width: '25%', height: '100%', background: 'linear-gradient(90deg, #00694D, #00A478)', borderRadius: 999 }} />
-              </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 28 }}>
+              <div style={{ width: 14, height: 14, borderRadius: '50%', background: 'rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8 }}>⏱</div>
+              <span style={{ color: '#fff', fontSize: 12, fontWeight: 500 }}>12 min</span>
             </div>
           </div>
         </div>
 
-        {/* Create & Save */}
-        <h2 style={{
-          fontSize: 20, fontWeight: 700, color: '#1E1B17',
-          fontFamily: "'Plus Jakarta Sans', sans-serif",
-          marginBottom: 14,
-        }}>Create & Save</h2>
-
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, marginBottom: 28 }}>
+        {/* ===== CREATE SOMETHING ===== */}
+        <h2 style={{ fontSize: 22, fontWeight: 800, color: '#1A1A2E', marginBottom: 16, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+          Create Something 🎨
+        </h2>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
           {[
             { icon: '📓', label: 'Journal', bg: 'linear-gradient(135deg, #8DF7CC, #5EE8B2)', color: '#00694D', shadow: 'rgba(0,105,77,0.2)' },
             { icon: '🎨', label: 'Art', bg: 'linear-gradient(135deg, #F7D8FF, #E8B8FF)', color: '#813EA0', shadow: 'rgba(129,62,160,0.2)' },
             { icon: '📝', label: 'Notes', bg: 'linear-gradient(135deg, #FFE2DC, #FFBCB2)', color: '#A43B2D', shadow: 'rgba(164,59,45,0.2)' },
           ].map(item => (
             <button key={item.label} style={{
-              background: item.bg,
-              borderRadius: 20, padding: '16px 8px',
+              background: item.bg, borderRadius: 20, padding: '16px 8px',
               border: 'none', cursor: 'pointer',
               display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
-              boxShadow: `0 6px 20px ${item.shadow}`,
-              transition: 'transform 0.15s',
+              boxShadow: `0 6px 18px ${item.shadow}`,
             }}>
               <span style={{ fontSize: 26 }}>{item.icon}</span>
-              <span style={{ color: item.color, fontWeight: 700, fontSize: 13 }}>{item.label}</span>
+              <span style={{ color: item.color, fontWeight: 700, fontSize: 13, fontFamily: "'Be Vietnam Pro', sans-serif" }}>{item.label}</span>
             </button>
           ))}
         </div>
