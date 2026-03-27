@@ -1,35 +1,36 @@
-import type { Metadata } from "next";
-import { Plus_Jakarta_Sans, Be_Vietnam_Pro } from "next/font/google";
-import "./globals.css";
+import type { Metadata } from 'next'
+import { Geist, Geist_Mono } from 'next/font/google'
+import './globals.css'
+import BottomNav from '@/components/BottomNav'
 
-const plusJakartaSans = Plus_Jakarta_Sans({
-  variable: "--font-heading",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
-});
+const geistSans = Geist({
+  variable: '--font-sans',
+  subsets: ['latin'],
+})
 
-const beVietnamPro = Be_Vietnam_Pro({
-  variable: "--font-sans",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-});
+const geistMono = Geist_Mono({
+  variable: '--font-geist-mono',
+  subsets: ['latin'],
+})
 
 export const metadata: Metadata = {
-  title: "ALC - AI Learning Companion",
-  description: "A personal learning OS for your family",
-};
+  title: 'AI Learning Companion',
+  description: 'Your personal learning companion',
+}
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: {
+  children: React.ReactNode
+}) {
   return (
-    <html
-      lang="en"
-      className={`${plusJakartaSans.variable} ${beVietnamPro.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col">{children}</body>
+    <html lang="en">
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <main className="pb-20">
+          {children}
+        </main>
+        <BottomNav />
+      </body>
     </html>
-  );
+  )
 }
