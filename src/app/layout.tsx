@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Plus_Jakarta_Sans, Be_Vietnam_Pro } from 'next/font/google'
+import { Plus_Jakarta_Sans, Be_Vietnam_Pro, Nunito } from 'next/font/google'
 import './globals.css'
 import BottomNav from '@/components/BottomNav'
 
@@ -15,6 +15,12 @@ const beVietnam = Be_Vietnam_Pro({
   weight: ['400', '500', '600'],
 })
 
+const nunito = Nunito({
+  variable: '--font-heading',
+  subsets: ['latin'],
+  weight: ['400', '700', '800', '900'],
+})
+
 export const metadata: Metadata = {
   title: 'AI Learning Companion',
   description: 'Your personal learning companion',
@@ -27,7 +33,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${plusJakarta.variable} ${beVietnam.variable} antialiased`} style={{ background: '#FFF8F1', fontFamily: 'var(--font-body), Be Vietnam Pro, sans-serif' }}>
+      <body className={`${plusJakarta.variable} ${beVietnam.variable} ${nunito.variable} antialiased`} style={{ background: '#FFF8F1', fontFamily: 'var(--font-body), Be Vietnam Pro, sans-serif' }}>
         <main style={{ paddingBottom: 80 }}>
           {children}
         </main>
