@@ -20,7 +20,6 @@ export async function POST(req: NextRequest) {
         title,
         description,
         artifact_type: artifact_type || type || 'other',
-        topic_id: topic_id || null,
       }),
     })
     const data = await res.json()

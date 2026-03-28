@@ -35,7 +35,7 @@ Your coaching rules:
         'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
         'Content-Type': 'application/json',
         'HTTP-Referer': 'https://alc-app-one.vercel.app',
-        'X-Title': 'ALC Learning Companion — Aria',
+        'X-Title': 'ALC Learning Companion',
       },
       body: JSON.stringify({
         model: 'google/gemini-2.0-flash-001',
