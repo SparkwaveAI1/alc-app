@@ -48,13 +48,21 @@ Your coaching rules:
       }),
     })
 
+    if (!response.ok) {
+      const errText = await response.text()
+      console.error('OpenRouter error:', response.status, errText)
+      return NextResponse.json({ error: `OpenRouter ${response.status}: ${errText.slice(0,200)}` }, { status: 500 })
+    }
     const data = await response.json()
     const content = data.choices?.[0]?.message?.content
 
-    if (!content) return NextResponse.json({ error: 'No response' }, { status: 500 })
+    if (!content) {
+      console.error('No content in response:', JSON.stringify(data).slice(0,300))
+      return NextResponse.json({ error: 'No content returned', detail: JSON.stringify(data).slice(0,200) }, { status: 500 })
+    }
     return NextResponse.json({ message: content })
   } catch (err) {
     console.error('Chat error:', err)
-    return NextResponse.json({ error: 'Failed to get response' }, { status: 500 })
+    return NextResponse.json({ error: `Exception: ${String(err)}` }, { status: 500 })
   }
 }
