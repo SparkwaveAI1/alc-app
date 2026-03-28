@@ -2,11 +2,11 @@
 import Link from 'next/link'
 
 const tabs = [
-  { label: 'Home',     icon: '🏠', href: '/' },
-  { label: 'Explore',  icon: '🔭', href: '/explore' },
-  { label: 'Create',   icon: '✏️', href: '/create' },
-  { label: 'Progress', icon: '⭐', href: '/progress' },
-  { label: 'Me',       icon: '👤', href: '/me' },
+  { label: 'home',     icon: '🏠', href: '/',        display: 'Home' },
+  { label: 'explore',  icon: '🔭', href: '/explore', display: 'Explore' },
+  { label: 'search',   icon: '🔍', href: '/search',  display: 'Search' },
+  { label: 'progress', icon: '⭐', href: '/progress',display: 'Progress' },
+  { label: 'me',       icon: '👤', href: '/me',      display: 'Me' },
 ]
 
 export default function Nav({ active }: { active: string }) {
@@ -19,7 +19,7 @@ export default function Nav({ active }: { active: string }) {
       height: 70, zIndex: 100,
     }}>
       {tabs.map(tab => {
-        const isActive = tab.label.toLowerCase() === active
+        const isActive = tab.label === active
         return (
           <Link key={tab.href} href={tab.href} style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, width: 60 }}>
             <div style={{
@@ -28,7 +28,7 @@ export default function Nav({ active }: { active: string }) {
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: 20, transition: 'background 0.2s',
             }}>{tab.icon}</div>
-            <span style={{ fontSize: 10, fontWeight: isActive ? 700 : 500, color: isActive ? '#7C3AED' : '#9CA3AF' }}>{tab.label}</span>
+            <span style={{ fontSize: 10, fontWeight: isActive ? 700 : 500, color: isActive ? '#7C3AED' : '#9CA3AF' }}>{tab.display}</span>
           </Link>
         )
       })}
