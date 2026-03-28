@@ -44,6 +44,8 @@ export default function TopicPage() {
   // Notes / resources
   const [newNote, setNewNote] = useState('')
   const [newUrl, setNewUrl] = useState('')
+  const [urlTitle, setUrlTitle] = useState('')
+  const [fetchingTitle, setFetchingTitle] = useState(false)
 
   // Aria chat
   const [ariaOpen, setAriaOpen] = useState(false)
@@ -175,16 +177,31 @@ export default function TopicPage() {
     } catch {}
   }
 
+  // ── Fetch YouTube title on URL change ──
+  const handleUrlChange = async (url: string) => {
+    setNewUrl(url)
+    setUrlTitle('')
+    const ytMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|shorts\/))([\w-]+)/)
+    if (!ytMatch) return
+    setFetchingTitle(true)
+    try {
+      const res = await fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`)
+      if (res.ok) { const d = await res.json(); setUrlTitle(d.title || '') }
+    } catch {}
+    setFetchingTitle(false)
+  }
+
   // ── Save resource ──
   const handleSaveResource = async () => {
     if (!newUrl.trim()) return
+    const title = urlTitle || newUrl
     try {
       await fetch('/api/resources', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: newUrl, url: newUrl, topic_id: topic.id }),
+        body: JSON.stringify({ title, url: newUrl, topic_id: topic.id }),
       })
-      setResources(prev => [{ id: Math.random(), title: newUrl, url: newUrl }, ...prev])
-      setNewUrl('')
+      setResources(prev => [{ id: Math.random(), title, url: newUrl }, ...prev])
+      setNewUrl(''); setUrlTitle('')
     } catch {}
   }
 
@@ -363,11 +380,17 @@ export default function TopicPage() {
           {expandedSection === 'watch' && (
             <div style={{ padding: '0 18px 18px', borderTop: '1px solid #F3F0EB' }}>
               <div style={{ fontSize: 12, fontWeight: 700, color: '#6B6560', marginBottom: 8 }}>Paste a YouTube video URL</div>
-              <input value={newUrl} onChange={e => setNewUrl(e.target.value)} placeholder="https://youtu.be/..." style={{
+              <input value={newUrl} onChange={e => handleUrlChange(e.target.value)} placeholder="https://youtu.be/..." style={{
                 width: '100%', borderRadius: 12, border: '1.5px solid #E8E2D9', padding: '10px 12px',
                 fontSize: 13, marginBottom: 8, background: '#FFF7ED', color: '#2D2A26',
                 outline: 'none', boxSizing: 'border-box', fontFamily: "'DM Sans', sans-serif",
               }} />
+              {fetchingTitle && <div style={{ fontSize: 12, color: '#7C5CBF', marginBottom: 8 }}>🔍 Getting title...</div>}
+              {urlTitle && (
+                <div style={{ background: '#F0EBF8', borderRadius: 10, padding: '8px 12px', marginBottom: 8, fontSize: 13, fontWeight: 600, color: '#2D2A26', display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <span>▶️</span> {urlTitle}
+                </div>
+              )}
               <button onClick={handleSaveResource} disabled={!newUrl.trim()} style={{
                 width: '100%', background: newUrl.trim() ? '#4CAF7C' : '#E5E7EB',
                 color: newUrl.trim() ? '#fff' : '#9E9792', border: 'none', borderRadius: 10,
@@ -380,12 +403,16 @@ export default function TopicPage() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {resources.map(r => (
                     <a key={r.id} href={r.url} target="_blank" rel="noopener noreferrer" style={{
-                      background: '#F3F0EB', borderRadius: 14, padding: '12px', display: 'flex',
-                      gap: 10, alignItems: 'center', textDecoration: 'none', color: '#2D2A26',
+                      background: '#F3F0EB', borderRadius: 14, padding: '14px', display: 'flex',
+                      gap: 12, alignItems: 'center', textDecoration: 'none', color: '#2D2A26',
                     }}>
-                      <span style={{ fontSize: 22 }}>▶️</span>
-                      <div style={{ flex: 1, minWidth: 0, fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.title || r.url}</div>
-                      <span style={{ color: '#D1C8D8', fontSize: 14 }}>→</span>
+                      <span style={{ fontSize: 24, flexShrink: 0 }}>▶️</span>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: '#2D2A26', lineHeight: 1.4 }}>
+                          {r.title && r.title !== r.url ? r.title : 'Watch video'}
+                        </div>
+                        <div style={{ fontSize: 11, color: '#7C5CBF', marginTop: 2, fontWeight: 600 }}>Tap to open ↗</div>
+                      </div>
                     </a>
                   ))}
                 </div>
