@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import Nav from '@/components/Nav'
 import Link from 'next/link'
+import { createClient } from '@/lib/supabase-browser'
+import { useRouter } from 'next/navigation'
 
 type Profile = { id: string; name: string; grade: number; interests: string[]; avatar: string; setup_complete: boolean }
 type Stats = { modules: number; cards: number; artifacts: number; streak: number }
@@ -10,6 +12,8 @@ type Stats = { modules: number; cards: number; artifacts: number; streak: number
 const GRADE_LABELS: Record<number, string> = { 1:'1st', 2:'2nd', 3:'3rd', 4:'4th', 5:'5th', 6:'6th', 7:'7th', 8:'8th', 9:'9th' }
 
 export default function Me() {
+  const router = useRouter()
+  const supabase = createClient()
   const [profile, setProfile] = useState<Profile | null>(null)
   const [stats, setStats] = useState<Stats>({ modules: 0, cards: 0, artifacts: 0, streak: 0 })
   const [loading, setLoading] = useState(true)
@@ -127,6 +131,11 @@ export default function Me() {
               </div>
             </Link>
           ))}
+          <button onClick={async () => { await supabase.auth.signOut(); router.replace('/login') }} style={{ background: '#FEF2F2', borderRadius: 18, padding: '16px 18px', display: 'flex', alignItems: 'center', gap: 12, boxShadow: '0 2px 10px rgba(0,0,0,0.06)', border: 'none', cursor: 'pointer', width: '100%', textAlign: 'left' }}>
+            <span style={{ fontSize: 22 }}>🚪</span>
+            <div style={{ flex: 1, fontSize: 15, fontWeight: 600, color: '#DC2626' }}>Sign Out</div>
+            <span style={{ color: '#FCA5A5', fontSize: 18 }}>›</span>
+          </button>
         </div>
       </div>
       <Nav active="me" />
