@@ -2,31 +2,44 @@
 
 export default function Progress() {
   return (
-    <div className="min-h-screen bg-[#FFF8F1]">
-      <div className="px-6 pt-8 pb-8">
-        <h1 className="text-3xl font-bold text-[#813EA0] mb-8">My Progress ⭐</h1>
-        
-        <div className="space-y-6">
+    <div style={{ minHeight: '100vh', background: '#FFF7ED', fontFamily: "'Be Vietnam Pro', sans-serif" }}>
+      <div style={{
+        background: 'linear-gradient(135deg, #F59E0B 0%, #F97316 60%, #EA580C 100%)',
+        borderRadius: '0 0 28px 28px',
+        padding: '52px 20px 32px',
+        position: 'relative', overflow: 'hidden', minHeight: 150,
+      }}>
+        <div style={{ position: 'absolute', top: -10, right: 30, width: 110, height: 110, borderRadius: '50%', background: 'rgba(249,115,22,0.4)', filter: 'blur(35px)' }} />
+        <h1 style={{ color: '#fff', fontSize: 30, fontWeight: 800, margin: 0, fontFamily: "'Plus Jakarta Sans', sans-serif", position: 'relative', zIndex: 1 }}>
+          My Progress ⭐
+        </h1>
+        <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: 15, margin: '6px 0 0', position: 'relative', zIndex: 1 }}>
+          Look how far you&apos;ve come!
+        </p>
+      </div>
+
+      <div style={{ padding: '28px 16px 120px' }}>
+        <h2 style={{ fontSize: 20, fontWeight: 800, color: '#1C1917', marginBottom: 16, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Your Subjects</h2>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           {[
-            { subject: 'History', progress: 45, color: '#FD7D69', sessions: '12 sessions' },
-            { subject: 'Writing', progress: 70, color: '#813EA0', sessions: '18 sessions' },
-            { subject: 'Math', progress: 30, color: '#00694D', sessions: '8 sessions' },
-          ].map((item) => (
-            <div key={item.subject} className="bg-white rounded-2xl p-5 shadow-sm">
-              <div className="flex justify-between items-center mb-3">
-                <h3 className="font-bold text-[#1E1B17]">{item.subject}</h3>
-                <span className="text-xs text-[#4D4350]">{item.sessions}</span>
+            { subject: 'History',  pct: 45, color: '#EA580C', shadow: 'rgba(234,88,12,0.3)',  sessions: '12 sessions' },
+            { subject: 'Writing',  pct: 70, color: '#7C3AED', shadow: 'rgba(124,58,237,0.3)', sessions: '18 sessions' },
+            { subject: 'Geography',pct: 30, color: '#4338CA', shadow: 'rgba(67,56,202,0.3)',  sessions: '8 sessions'  },
+            { subject: 'Science',  pct: 20, color: '#065F46', shadow: 'rgba(6,95,70,0.3)',    sessions: '5 sessions'  },
+          ].map(item => (
+            <div key={item.subject} style={{
+              background: '#fff', borderRadius: 22, padding: '18px 18px',
+              boxShadow: `0 6px 20px ${item.shadow}`,
+              borderLeft: `5px solid ${item.color}`,
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                <span style={{ fontSize: 17, fontWeight: 700, color: '#1C1917', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{item.subject}</span>
+                <span style={{ fontSize: 12, color: '#6B7280' }}>{item.sessions}</span>
               </div>
-              <div className="w-full bg-[#E8D5C4] rounded-full h-3 overflow-hidden">
-                <div
-                  className="h-3 rounded-full transition-all"
-                  style={{
-                    width: `${item.progress}%`,
-                    background: `linear-gradient(90deg, ${item.color}, ${item.color}dd)`,
-                  }}
-                />
+              <div style={{ height: 10, background: '#F3F4F6', borderRadius: 999, overflow: 'hidden' }}>
+                <div style={{ width: `${item.pct}%`, height: '100%', background: item.color, borderRadius: 999 }} />
               </div>
-              <p className="text-xs text-[#4D4350] mt-2">{item.progress}% explored</p>
+              <p style={{ fontSize: 12, color: '#6B7280', marginTop: 6 }}>{item.pct}% explored</p>
             </div>
           ))}
         </div>

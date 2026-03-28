@@ -2,42 +2,53 @@
 
 export default function Me() {
   return (
-    <div className="min-h-screen bg-[#FFF8F1]">
-      <div className="px-6 pt-8 pb-8">
-        <h1 className="text-3xl font-bold text-[#813EA0] mb-8">Hi, Zoe! 👤</h1>
-        
-        <div className="space-y-6">
-          {/* Profile Card */}
-          <div className="bg-white rounded-2xl p-6 shadow-sm border-l-4 border-[#813EA0]">
-            <div className="flex items-center gap-4 mb-6">
-              <div className="w-16 h-16 bg-gradient-to-br from-[#F7D8FF] to-[#E6C9F3] rounded-full flex items-center justify-center text-3xl">
-                👧
-              </div>
-              <div>
-                <h3 className="text-xl font-bold text-[#1E1B17]">Zoe</h3>
-                <p className="text-sm text-[#4D4350]">10 years old • Adventure seeker</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Settings */}
+    <div style={{ minHeight: '100vh', background: '#FFF7ED', fontFamily: "'Be Vietnam Pro', sans-serif" }}>
+      <div style={{
+        background: 'linear-gradient(135deg, #8B5CF6 0%, #7C3AED 50%, #6D28D9 100%)',
+        borderRadius: '0 0 28px 28px',
+        padding: '52px 20px 32px',
+        position: 'relative', overflow: 'hidden', minHeight: 150,
+      }}>
+        <div style={{ position: 'absolute', top: -10, right: 30, width: 110, height: 110, borderRadius: '50%', background: 'rgba(109,40,217,0.4)', filter: 'blur(35px)' }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, position: 'relative', zIndex: 1 }}>
+          <div style={{
+            width: 60, height: 60, borderRadius: '50%',
+            background: 'radial-gradient(circle at 35% 30%, #FBBF24, #F59E0B)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 30, boxShadow: '0 4px 16px rgba(0,0,0,0.25)',
+          }}>⭐</div>
           <div>
-            <h2 className="text-sm font-bold text-[#4D4350] uppercase tracking-wide mb-3">Settings</h2>
-            <div className="space-y-2">
-              <button className="w-full bg-white rounded-2xl p-4 shadow-sm text-left hover:bg-[#F9F3EB] transition-colors">
-                <p className="font-semibold text-[#1E1B17]">⚙️ Preferences</p>
-              </button>
-              <button className="w-full bg-white rounded-2xl p-4 shadow-sm text-left hover:bg-[#F9F3EB] transition-colors">
-                <p className="font-semibold text-[#1E1B17]">🔔 Notifications</p>
-              </button>
-              <button className="w-full bg-white rounded-2xl p-4 shadow-sm text-left hover:bg-[#F9F3EB] transition-colors">
-                <p className="font-semibold text-[#1E1B17]">❓ Help & Support</p>
-              </button>
-              <button className="w-full bg-white rounded-2xl p-4 shadow-sm text-left hover:bg-[#F9F3EB] transition-colors">
-                <p className="font-semibold text-[#1E1B17]">🚪 Logout</p>
-              </button>
-            </div>
+            <h1 style={{ color: '#fff', fontSize: 26, fontWeight: 800, margin: 0, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Nayomi</h1>
+            <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: 14, margin: '3px 0 0' }}>Grade 4 · Explorer</p>
           </div>
+        </div>
+      </div>
+
+      <div style={{ padding: '28px 16px 120px' }}>
+        {/* Stats row */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, marginBottom: 28 }}>
+          {[
+            { value: '7',  label: 'Day Streak', bg: 'linear-gradient(135deg, #8DF7CC, #5EE8B2)', color: '#065F46' },
+            { value: '43', label: 'Adventures',  bg: 'linear-gradient(135deg, #F7D8FF, #E8B8FF)', color: '#7C3AED' },
+            { value: '12', label: 'Creations',   bg: 'linear-gradient(135deg, #FFE2DC, #FFBCB2)', color: '#9A3412' },
+          ].map(s => (
+            <div key={s.label} style={{ background: s.bg, borderRadius: 18, padding: '14px 10px', textAlign: 'center', boxShadow: '0 4px 14px rgba(0,0,0,0.08)' }}>
+              <div style={{ fontSize: 24, fontWeight: 800, color: s.color, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{s.value}</div>
+              <div style={{ fontSize: 11, fontWeight: 600, color: s.color, opacity: 0.8 }}>{s.label}</div>
+            </div>
+          ))}
+        </div>
+
+        <h2 style={{ fontSize: 20, fontWeight: 800, color: '#1C1917', marginBottom: 14, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Settings</h2>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {['⚙️ Preferences', '🔔 Notifications', '❓ Help & Support', '🚪 Logout'].map(item => (
+            <button key={item} style={{
+              background: '#fff', borderRadius: 18, padding: '16px 18px',
+              border: 'none', cursor: 'pointer', textAlign: 'left',
+              fontSize: 15, fontWeight: 600, color: '#1C1917',
+              boxShadow: '0 2px 10px rgba(0,0,0,0.06)',
+            }}>{item}</button>
+          ))}
         </div>
       </div>
     </div>
