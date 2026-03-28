@@ -230,7 +230,7 @@ export default function TopicPage() {
       {/* Hero */}
       <div style={{ background: color, padding: '20px 16px 32px', borderRadius: '0 0 24px 24px' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 12 }}>
-          <Link href="/explore" style={{ color: 'rgba(255,255,255,0.85)', fontSize: 22, textDecoration: 'none', lineHeight: 1, marginTop: 2 }}>←</Link>
+          <Link href="/explore" style={{ color: 'rgba(255,255,255,0.85)', fontSize: 22, textDecoration: 'none', lineHeight: 1, padding: '8px 12px 8px 4px', marginLeft: -4 }}>←</Link>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.8)', letterSpacing: '0.8px', marginBottom: 4 }}>{topic.subject_tag?.toUpperCase()}</div>
             <h1 style={{ margin: 0, fontSize: 26, fontWeight: 800, color: '#fff', fontFamily: "'Nunito', sans-serif" }}>{topic.title}</h1>
