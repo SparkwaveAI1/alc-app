@@ -121,7 +121,7 @@ export default function Me() {
             { icon: '🗺️', label: 'My Paths', href: '/paths' },
             { icon: '🌟', label: 'Learning Areas', href: '/areas' },
             { icon: '🎨', label: 'Portfolio', href: '/portfolio' },
-            { icon: '❓', label: 'Help & Support', href: '/' },
+            { icon: '❓', label: 'User Guide', href: '/guide' },
           ].map(item => (
             <Link key={item.label} href={item.href} style={{ textDecoration: 'none' }}>
               <div style={{ background: '#fff', borderRadius: 18, padding: '16px 18px', display: 'flex', alignItems: 'center', gap: 12, boxShadow: '0 2px 10px rgba(0,0,0,0.06)' }}>
