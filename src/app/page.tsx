@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Nav from '@/components/Nav'
 import Link from 'next/link'
+import DailyChallenge from '@/components/DailyChallenge'
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
 const SUPABASE_ANON = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -201,6 +202,9 @@ export default function Home() {
             </Link>
           ))}
         </div>
+
+        {/* Daily Challenge */}
+        <DailyChallenge />
 
         {/* Create Something */}
         <h2 style={{ fontSize: 20, fontWeight: 800, color: '#1C1917', marginBottom: 14, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Create Something 🧶</h2>

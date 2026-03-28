@@ -29,6 +29,11 @@ type Flashcard = { id: string; front: string; back: string; review_count: number
 type Resource = { id: string; type: string; url: string; title: string; summary: string }
 type Note = { id: string; content: string; created_at: string }
 
+function getYouTubeId(url: string): string | null {
+  const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/)
+  return match ? match[1] : null
+}
+
 export default function WikiPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params)
   const [topic, setTopic] = useState<Topic | null>(null)
@@ -41,6 +46,10 @@ export default function WikiPage({ params }: { params: Promise<{ slug: string }>
   const [resourceUrl, setResourceUrl] = useState('')
   const [resourceTitle, setResourceTitle] = useState('')
   const [flippedCard, setFlippedCard] = useState<string | null>(null)
+  const [newCardFront, setNewCardFront] = useState('')
+  const [newCardBack, setNewCardBack] = useState('')
+  const [addingCard, setAddingCard] = useState(false)
+  const [expandedVideo, setExpandedVideo] = useState<string | null>(null)
 
   useEffect(() => {
     loadTopic()
@@ -218,29 +227,47 @@ export default function WikiPage({ params }: { params: Promise<{ slug: string }>
 
         {/* FLASHCARDS TAB */}
         {activeTab === 'flashcards' && (
-          <div>
-            {flashcards.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '40px 0', color: '#9CA3AF' }}>No flashcards yet</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {/* Add card button */}
+            {!addingCard ? (
+              <button onClick={() => setAddingCard(true)} style={{ background: colors.bg, borderRadius: 18, padding: '14px 18px', border: 'none', cursor: 'pointer', color: '#fff', fontWeight: 700, fontSize: 14, display: 'flex', alignItems: 'center', gap: 10, boxShadow: `0 4px 14px ${colors.shadow}` }}>
+                <span style={{ fontSize: 22 }}>➕</span> Add your own flashcard
+              </button>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {flashcards.map(card => (
-                  <div key={card.id} onClick={() => setFlippedCard(flippedCard === card.id ? null : card.id)}
-                    style={{ background: flippedCard === card.id ? colors.bg : '#fff', borderRadius: 20, padding: '20px', boxShadow: `0 4px 16px ${flippedCard === card.id ? colors.shadow : 'rgba(0,0,0,0.07)'}`, cursor: 'pointer', minHeight: 80, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                    {flippedCard === card.id ? (
-                      <>
-                        <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.7)', marginBottom: 6 }}>ANSWER</div>
-                        <div style={{ fontSize: 16, fontWeight: 600, color: '#fff', lineHeight: 1.5 }}>{card.back}</div>
-                      </>
-                    ) : (
-                      <>
-                        <div style={{ fontSize: 11, fontWeight: 700, color: '#9CA3AF', marginBottom: 6 }}>QUESTION — tap to reveal</div>
-                        <div style={{ fontSize: 15, fontWeight: 600, color: '#1C1917', lineHeight: 1.5 }}>{card.front}</div>
-                      </>
-                    )}
-                  </div>
-                ))}
+              <div style={{ background: '#fff', borderRadius: 20, padding: '18px', boxShadow: '0 4px 14px rgba(0,0,0,0.07)' }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: '#1C1917', marginBottom: 12 }}>New Flashcard</div>
+                <input value={newCardFront} onChange={e => setNewCardFront(e.target.value)} placeholder="Question or term..." style={{ width: '100%', borderRadius: 12, border: '1.5px solid #E8D5C4', padding: '10px 14px', fontSize: 14, marginBottom: 8, background: '#FFF7ED', color: '#1C1917', outline: 'none', fontFamily: "'Be Vietnam Pro', sans-serif" }} />
+                <input value={newCardBack} onChange={e => setNewCardBack(e.target.value)} placeholder="Answer or definition..." style={{ width: '100%', borderRadius: 12, border: '1.5px solid #E8D5C4', padding: '10px 14px', fontSize: 14, marginBottom: 12, background: '#FFF7ED', color: '#1C1917', outline: 'none', fontFamily: "'Be Vietnam Pro', sans-serif" }} />
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button onClick={async () => {
+                    if (!newCardFront.trim() || !newCardBack.trim() || !topic) return
+                    const res = await fetch('/api/flashcards', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ topic_id: topic.id, front: newCardFront, back: newCardBack }) })
+                    const data = await res.json()
+                    if (data.card) { setFlashcards(prev => [...prev, data.card]); setNewCardFront(''); setNewCardBack(''); setAddingCard(false) }
+                  }} disabled={!newCardFront.trim() || !newCardBack.trim()} style={{ flex: 1, background: 'linear-gradient(135deg, #065F46, #10B981)', color: '#fff', fontWeight: 700, fontSize: 13, padding: '10px', borderRadius: 999, border: 'none', cursor: 'pointer' }}>Save Card</button>
+                  <button onClick={() => setAddingCard(false)} style={{ background: '#F3F4F6', color: '#6B7280', fontWeight: 600, fontSize: 13, padding: '10px 14px', borderRadius: 999, border: 'none', cursor: 'pointer' }}>Cancel</button>
+                </div>
               </div>
             )}
+            {flashcards.length === 0 && !addingCard && (
+              <div style={{ textAlign: 'center', padding: '30px', color: '#9CA3AF' }}>No flashcards yet — AI cards are added when you create the module, or add your own above</div>
+            )}
+            {flashcards.map(card => (
+              <div key={card.id} onClick={() => setFlippedCard(flippedCard === card.id ? null : card.id)}
+                style={{ background: flippedCard === card.id ? colors.bg : '#fff', borderRadius: 20, padding: '20px', boxShadow: `0 4px 16px ${flippedCard === card.id ? colors.shadow : 'rgba(0,0,0,0.07)'}`, cursor: 'pointer', minHeight: 80, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                {flippedCard === card.id ? (
+                  <>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.7)', marginBottom: 6 }}>ANSWER</div>
+                    <div style={{ fontSize: 16, fontWeight: 600, color: '#fff', lineHeight: 1.5 }}>{card.back}</div>
+                  </>
+                ) : (
+                  <>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: '#9CA3AF', marginBottom: 6 }}>QUESTION — tap to reveal</div>
+                    <div style={{ fontSize: 15, fontWeight: 600, color: '#1C1917', lineHeight: 1.5 }}>{card.front}</div>
+                  </>
+                )}
+              </div>
+            ))}
           </div>
         )}
 
@@ -253,17 +280,42 @@ export default function WikiPage({ params }: { params: Promise<{ slug: string }>
               <input value={resourceTitle} onChange={e => setResourceTitle(e.target.value)} placeholder="Title (optional)" style={{ width: '100%', borderRadius: 12, border: '1.5px solid #E8D5C4', padding: '12px 14px', fontSize: 14, marginBottom: 10, background: '#FFF7ED', color: '#1C1917', outline: 'none', fontFamily: "'Be Vietnam Pro', sans-serif" }} />
               <button onClick={saveResource} disabled={!resourceUrl.trim()} style={{ background: 'linear-gradient(135deg, #DC2626, #EF4444)', color: '#fff', fontWeight: 700, fontSize: 14, padding: '10px 20px', borderRadius: 999, border: 'none', cursor: 'pointer' }}>▶️ Add Resource</button>
             </div>
-            {resources.map(r => (
-              <a key={r.id} href={r.url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
-                <div style={{ background: '#fff', borderRadius: 18, padding: '16px 18px', boxShadow: '0 4px 12px rgba(0,0,0,0.06)', display: 'flex', gap: 12, alignItems: 'center' }}>
-                  <div style={{ fontSize: 28 }}>{r.type === 'youtube' ? '▶️' : '🔗'}</div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 600, color: '#1C1917', fontSize: 14 }}>{r.title || r.url}</div>
-                    {r.summary && <div style={{ fontSize: 12, color: '#6B7280', marginTop: 3 }}>{r.summary}</div>}
+            {resources.map(r => {
+              const ytId = r.type === 'youtube' ? getYouTubeId(r.url) : null
+              const isExpanded = expandedVideo === r.id
+              return (
+                <div key={r.id} style={{ background: '#fff', borderRadius: 18, overflow: 'hidden', boxShadow: '0 4px 12px rgba(0,0,0,0.06)' }}>
+                  {/* YouTube embed */}
+                  {ytId && isExpanded && (
+                    <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0 }}>
+                      <iframe src={`https://www.youtube.com/embed/${ytId}?autoplay=1`} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }} allow="autoplay; encrypted-media" allowFullScreen />
+                    </div>
+                  )}
+                  {/* Thumbnail or icon row */}
+                  {ytId && !isExpanded && (
+                    <div onClick={() => setExpandedVideo(r.id)} style={{ cursor: 'pointer', position: 'relative' }}>
+                      <img src={`https://img.youtube.com/vi/${ytId}/mqdefault.jpg`} alt={r.title} style={{ width: '100%', display: 'block', borderRadius: '18px 18px 0 0' }} />
+                      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.3)', borderRadius: '18px 18px 0 0' }}>
+                        <div style={{ width: 52, height: 52, borderRadius: '50%', background: 'rgba(220,38,38,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22 }}>▶</div>
+                      </div>
+                    </div>
+                  )}
+                  <div style={{ padding: '14px 16px', display: 'flex', gap: 10, alignItems: 'center' }}>
+                    {!ytId && <div style={{ fontSize: 26 }}>🔗</div>}
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 600, color: '#1C1917', fontSize: 14 }}>{r.title || r.url}</div>
+                    </div>
+                    {ytId ? (
+                      <button onClick={() => setExpandedVideo(isExpanded ? null : r.id)} style={{ background: isExpanded ? '#FEE2E2' : '#FEE2E2', border: 'none', borderRadius: 10, padding: '6px 12px', cursor: 'pointer', fontSize: 12, fontWeight: 700, color: '#DC2626' }}>
+                        {isExpanded ? '▼ Close' : '▶ Watch'}
+                      </button>
+                    ) : (
+                      <a href={r.url} target="_blank" rel="noopener noreferrer" style={{ background: '#EFF6FF', border: 'none', borderRadius: 10, padding: '6px 12px', fontSize: 12, fontWeight: 700, color: '#1D4ED8', textDecoration: 'none' }}>Open →</a>
+                    )}
                   </div>
                 </div>
-              </a>
-            ))}
+              )
+            })}
             {resources.length === 0 && <div style={{ textAlign: 'center', padding: '30px', color: '#9CA3AF' }}>No resources added yet</div>}
           </div>
         )}

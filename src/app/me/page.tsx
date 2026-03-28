@@ -115,6 +115,7 @@ export default function Me() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {[
             { icon: '🗺️', label: 'My Paths', href: '/paths' },
+            { icon: '🌟', label: 'Learning Areas', href: '/areas' },
             { icon: '🎨', label: 'Portfolio', href: '/portfolio' },
             { icon: '❓', label: 'Help & Support', href: '/' },
           ].map(item => (
