@@ -1,5 +1,6 @@
 'use client'
 import Nav from '@/components/Nav'
+import Link from 'next/link'
 
 export default function Me() {
   return (
@@ -27,9 +28,20 @@ export default function Me() {
             </div>
           ))}
         </div>
+        {/* Parent Dashboard */}
+        <Link href="/parent" style={{ textDecoration: 'none', display: 'block', marginBottom: 24 }}>
+          <div style={{ background: 'linear-gradient(135deg, #1E1B4B, #4F46E5)', borderRadius: 22, padding: '18px 20px', display: 'flex', alignItems: 'center', gap: 14, boxShadow: '0 6px 22px rgba(30,27,75,0.35)' }}>
+            <div style={{ width: 48, height: 48, borderRadius: 14, background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, flexShrink: 0 }}>👨‍👩‍👧</div>
+            <div style={{ flex: 1 }}>
+              <div style={{ color: '#fff', fontSize: 16, fontWeight: 800, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Parent Dashboard</div>
+              <div style={{ color: 'rgba(255,255,255,0.8)', fontSize: 13, marginTop: 2 }}>Progress, gaps, and activity overview</div>
+            </div>
+            <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: 22 }}>›</span>
+          </div>
+        </Link>
         <h2 style={{ fontSize: 20, fontWeight: 800, color: '#1C1917', marginBottom: 14, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Settings</h2>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {['⚙️ Preferences', '🔔 Notifications', '❓ Help & Support', '🚪 Logout'].map(item => (
+          {['⚙️ Preferences', '🔔 Notifications', '❓ Help & Support'].map(item => (
             <button key={item} style={{ background: '#fff', borderRadius: 18, padding: '16px 18px', border: 'none', cursor: 'pointer', textAlign: 'left', fontSize: 15, fontWeight: 600, color: '#1C1917', boxShadow: '0 2px 10px rgba(0,0,0,0.06)' }}>{item}</button>
           ))}
         </div>

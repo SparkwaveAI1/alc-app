@@ -3,6 +3,7 @@
 import { useState, useEffect, use } from 'react'
 import Link from 'next/link'
 import Nav from '@/components/Nav'
+import AriaChat from '@/components/AriaChat'
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
 const SUPABASE_ANON = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -287,6 +288,11 @@ export default function WikiPage({ params }: { params: Promise<{ slug: string }>
 
       </div>
       <Nav active="explore" />
+      <AriaChat
+        topic={topic.title}
+        context={topic.overview}
+        accentColor={colors.accent}
+      />
     </div>
   )
 }
