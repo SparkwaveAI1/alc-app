@@ -32,6 +32,7 @@ export default function Nav({ active }: { active?: string }) {
           <Link key={tab.key} href={tab.href} style={{
             flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
             padding: '10px 4px 8px', textDecoration: 'none', gap: 3,
+            maxHeight: 64, overflow: 'hidden',
           }}>
             <span style={{ fontSize: 22, lineHeight: 1 }}>{tab.icon}</span>
             <span style={{

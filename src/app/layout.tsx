@@ -22,7 +22,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         minHeight: '100vh',
         WebkitFontSmoothing: 'antialiased',
       }}>
-        <main id="main-content">
+        <main id="main-content" style={{ display: 'contents' }}>
           {children}
         </main>
       </body>
