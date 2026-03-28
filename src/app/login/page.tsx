@@ -24,9 +24,7 @@ function LoginForm() {
     setLoading(true)
     setError('')
 
-    // PIN is used as the password (padded to meet Supabase min length)
-    const password = `pin-${pin}-alc`
-    const { error: authError } = await supabase.auth.signInWithPassword({ email, password })
+    const { error: authError } = await supabase.auth.signInWithPassword({ email, password: pin })
 
     if (authError) {
       setError('Wrong email or PIN. Try again.')
