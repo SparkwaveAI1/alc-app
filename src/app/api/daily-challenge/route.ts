@@ -68,13 +68,12 @@ export async function POST(req: NextRequest) {
     body: JSON.stringify({ answer_submitted: answer, completed: true }),
   }).then(r => r.json())
 
-  // Also log activity
-  const today = new Date().toISOString().split('T')[0]
-  await fetch(`${SB}/rest/v1/learner_activity`, {
+  // Log to learning_logs
+  await fetch(`${SB}/rest/v1/learning_logs`, {
     method: 'POST',
-    headers: h({ 'Prefer': 'resolution=merge-duplicates' }),
-    body: JSON.stringify({ activity_date: today, modules_created: 0 }),
-  })
+    headers: h({ 'Prefer': 'return=minimal' }),
+    body: JSON.stringify({ title: 'Daily challenge', log_type: 'challenge', duration_minutes: 5 }),
+  }).catch(() => {}) // non-critical
 
   return NextResponse.json({ challenge: updated })
 }

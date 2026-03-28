@@ -12,14 +12,15 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
-    const { title, description, artifact_type, type, topic_id } = await req.json()
+    const { title, content, description, artifact_type, type, topic_id } = await req.json()
     const res = await fetch(`${SB}/rest/v1/artifacts`, {
       method: 'POST',
       headers: h,
       body: JSON.stringify({
         title,
-        description,
-        artifact_type: artifact_type || type || 'other',
+        content: description || content,
+        artifact_type: artifact_type || type || 'text',
+        topic_id: topic_id || null,
       }),
     })
     const data = await res.json()
