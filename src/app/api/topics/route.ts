@@ -34,12 +34,13 @@ export async function POST(req: NextRequest) {
     title,
     slug,
     description,
-    overview: ai.overview,
-    subject_tag: ai.subject_tag,
-    subtopics: ai.subtopics,
-    try_first_questions: ai.try_first_questions,
-    key_vocabulary: ai.key_vocabulary,
-    parent_id: parent_id || null,
+    overview: ai.overview || ai.fun_fact || title,
+    subject_tag: ai.subject_tag || 'General',
+    subtopics: ai.subtopics || [],
+    try_first_questions: ai.try_first_questions || [],
+    key_vocabulary: ai.key_vocabulary || [],
+    fun_fact: ai.fun_fact || null,
+    parent_topic_id: parent_id || null,
     ai_generated: true,
   })
 
@@ -47,12 +48,14 @@ export async function POST(req: NextRequest) {
 
   // Save flashcards
   if (ai.flashcard_seeds?.length) {
-    const cards = ai.flashcard_seeds.map((c: { front: string; back: string }) => ({
-      topic_id: topic.id,
-      front: c.front,
-      back: c.back,
-    }))
-    await sb('topic_flashcards', 'POST', cards)
+    for (const c of ai.flashcard_seeds) {
+      await sb('flashcards', 'POST', {
+        topic_id: topic.id,
+        front: c.front,
+        back: c.back,
+        card_type: 'fact',
+      })
+    }
   }
 
   return NextResponse.json({ topic })

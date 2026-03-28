@@ -1,97 +1,120 @@
 'use client'
-
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Nav from '@/components/Nav'
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
-const SUPABASE_ANON = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+const SB_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
+const SB_ANON = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
 const SUBJECT_COLORS: Record<string, string> = {
-  History: 'linear-gradient(135deg, #78350F, #EA580C)',
-  Geography: 'linear-gradient(135deg, #1E1B4B, #4338CA)',
-  Science: 'linear-gradient(135deg, #065F46, #10B981)',
-  Writing: 'linear-gradient(135deg, #065F46, #059669)',
-  Math: 'linear-gradient(135deg, #1D4ED8, #3B82F6)',
-  Art: 'linear-gradient(135deg, #7C3AED, #D946EF)',
-  Culture: 'linear-gradient(135deg, #B45309, #F59E0B)',
-  'Life Skills': 'linear-gradient(135deg, #0F766E, #14B8A6)',
+  Math: '#5BA4CF', Reading: '#7C5CBF', Writing: '#7C5CBF',
+  Science: '#4CAF7C', History: '#F5A623', Geography: '#5BA4CF',
+  Art: '#E8715A', Music: '#7C5CBF', default: '#7C5CBF',
 }
 
-type Topic = { id: string; title: string; slug: string; description: string; subject_tag: string; created_at: string }
-
-export default function Explore() {
-  const [topics, setTopics] = useState<Topic[]>([])
+export default function ExplorePage() {
+  const [areas, setAreas] = useState<any[]>([])
+  const [topics, setTopics] = useState<any[]>([])
+  const [saveLater, setSaveLater] = useState<any[]>([])
+  const [search, setSearch] = useState('')
+  const [selectedArea, setSelectedArea] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch(`${SUPABASE_URL}/rest/v1/topics?order=created_at.desc&select=id,title,slug,description,subject_tag,created_at`, {
-      headers: { 'apikey': SUPABASE_ANON!, 'Authorization': `Bearer ${SUPABASE_ANON}` }
-    })
-      .then(r => r.json())
-      .then(data => { setTopics(Array.isArray(data) ? data : []); setLoading(false) })
-      .catch(() => setLoading(false))
+    async function load() {
+      const [aRes, tRes] = await Promise.all([
+        fetch(`${SB_URL}/rest/v1/learning_areas?order=title`, {
+          headers: { apikey: SB_ANON!, Authorization: `Bearer ${SB_ANON}` }
+        }).then(r => r.json()),
+        fetch(`${SB_URL}/rest/v1/topics?order=created_at.desc`, {
+          headers: { apikey: SB_ANON!, Authorization: `Bearer ${SB_ANON}` }
+        }).then(r => r.json()),
+      ])
+      setAreas(Array.isArray(aRes) ? aRes : [])
+      setTopics(Array.isArray(tRes) ? tRes : [])
+      setLoading(false)
+    }
+    load()
   }, [])
 
+  const filtered = topics.filter(t => {
+    const matchSearch = !search || t.title.toLowerCase().includes(search.toLowerCase()) || (t.description || '').toLowerCase().includes(search.toLowerCase())
+    const matchArea = !selectedArea || t.learning_area_id === selectedArea
+    return matchSearch && matchArea
+  })
+
   return (
-    <div style={{ minHeight: '100vh', background: '#FFF7ED', fontFamily: "'Be Vietnam Pro', sans-serif" }}>
-      <div style={{ background: 'linear-gradient(135deg, #4F46E5 0%, #7C3AED 50%, #A855F7 100%)', borderRadius: '0 0 28px 28px', padding: '52px 20px 28px', position: 'relative', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', top: -10, right: 30, width: 110, height: 110, borderRadius: '50%', background: 'rgba(168,85,247,0.4)', filter: 'blur(35px)' }} />
-        <h1 style={{ color: '#fff', fontSize: 30, fontWeight: 800, margin: 0, fontFamily: "'Plus Jakarta Sans', sans-serif", position: 'relative', zIndex: 1 }}>My Modules 🔭</h1>
-        <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: 15, margin: '6px 0 0', position: 'relative', zIndex: 1 }}>Your personal learning wiki</p>
+    <div style={{ minHeight: '100vh', background: '#FDFBF7', fontFamily: "'DM Sans', sans-serif", paddingBottom: 90 }}>
+
+      {/* Header */}
+      <div style={{ background: 'linear-gradient(135deg, #7C5CBF 0%, #9C7DD4 100%)', padding: '52px 20px 24px', borderRadius: '0 0 28px 28px' }}>
+        <h1 style={{ margin: '0 0 14px', fontSize: 26, fontWeight: 800, color: '#fff', fontFamily: "'Nunito', sans-serif" }}>Explore 🧭</h1>
+        <input
+          value={search} onChange={e => setSearch(e.target.value)}
+          placeholder="Search topics..."
+          style={{ width: '100%', borderRadius: 12, border: 'none', padding: '12px 16px', fontSize: 15, background: 'rgba(255,255,255,0.95)', color: '#2D2A26', outline: 'none', fontFamily: "'DM Sans', sans-serif", boxSizing: 'border-box' }}
+        />
       </div>
 
-      <div style={{ padding: '24px 16px 100px' }}>
+      <div style={{ padding: '20px 16px' }}>
 
-        {/* Create new module CTA */}
-        <Link href="/new-module" style={{ textDecoration: 'none', display: 'block', marginBottom: 24 }}>
-          <div style={{ background: 'linear-gradient(135deg, #7C3AED, #D946EF)', borderRadius: 22, padding: '20px', display: 'flex', alignItems: 'center', gap: 14, boxShadow: '0 6px 22px rgba(124,58,237,0.4)' }}>
-            <div style={{ width: 52, height: 52, borderRadius: 16, background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28 }}>✨</div>
-            <div style={{ flex: 1 }}>
-              <div style={{ color: '#fff', fontSize: 18, fontWeight: 800, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Create a New Module</div>
-              <div style={{ color: 'rgba(255,255,255,0.85)', fontSize: 14, marginTop: 3 }}>Enter a topic — AI builds your learning adventure</div>
-            </div>
-            <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: 22 }}>›</span>
+        {/* Learning areas */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: '#9E9792', letterSpacing: '0.8px' }}>LEARNING AREAS</div>
+          {selectedArea && <button onClick={() => setSelectedArea(null)} style={{ background: 'none', border: 'none', color: '#7C5CBF', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>Show all</button>}
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 24 }}>
+          {areas.map(a => (
+            <button key={a.id} onClick={() => setSelectedArea(selectedArea === a.id ? null : a.id)} style={{
+              background: selectedArea === a.id ? a.color : '#fff',
+              borderRadius: 16, padding: '14px 8px', border: selectedArea === a.id ? `2px solid ${a.color}` : '2px solid transparent',
+              cursor: 'pointer', textAlign: 'center', boxShadow: '0 2px 10px rgba(45,42,38,0.06)', transition: 'all 0.15s',
+            }}>
+              <div style={{ fontSize: 24, marginBottom: 4 }}>{a.icon}</div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: selectedArea === a.id ? '#fff' : '#2D2A26', fontFamily: "'Nunito', sans-serif" }}>{a.title}</div>
+            </button>
+          ))}
+        </div>
+
+        {/* Topics grid */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: '#9E9792', letterSpacing: '0.8px' }}>
+            {selectedArea ? areas.find(a => a.id === selectedArea)?.title?.toUpperCase() + ' TOPICS' : 'MY TOPICS'}
+            {filtered.length > 0 && <span style={{ marginLeft: 6, color: '#C4BCC8' }}>({filtered.length})</span>}
           </div>
-        </Link>
+          <Link href="/new-module" style={{ background: '#7C5CBF', color: '#fff', borderRadius: 10, padding: '6px 14px', fontSize: 12, fontWeight: 700, textDecoration: 'none' }}>+ New Module</Link>
+        </div>
 
-        {loading && (
-          <div style={{ textAlign: 'center', padding: '40px', color: '#9CA3AF' }}>Loading your modules...</div>
-        )}
-
-        {!loading && topics.length === 0 && (
-          <div style={{ background: '#fff', borderRadius: 22, padding: '32px', textAlign: 'center', boxShadow: '0 4px 14px rgba(0,0,0,0.06)' }}>
-            <div style={{ fontSize: 48, marginBottom: 12 }}>📚</div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: '#1C1917', marginBottom: 8, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>No modules yet</div>
-            <div style={{ fontSize: 14, color: '#6B7280' }}>Create your first learning module above!</div>
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '30px', color: '#9E9792' }}>Loading...</div>
+        ) : filtered.length === 0 ? (
+          <div style={{ background: '#fff', borderRadius: 20, padding: '32px 20px', textAlign: 'center', boxShadow: '0 2px 12px rgba(45,42,38,0.06)' }}>
+            <div style={{ fontSize: 40, marginBottom: 10 }}>🌱</div>
+            <div style={{ fontWeight: 700, fontSize: 16, color: '#2D2A26', fontFamily: "'Nunito', sans-serif", marginBottom: 6 }}>No topics yet</div>
+            <p style={{ fontSize: 14, color: '#6B6560', margin: '0 0 16px' }}>Create your first learning module to get started</p>
+            <Link href="/new-module" style={{ background: '#7C5CBF', color: '#fff', borderRadius: 12, padding: '10px 22px', fontWeight: 700, fontSize: 14, textDecoration: 'none', display: 'inline-block' }}>Create a module ✨</Link>
           </div>
-        )}
-
-        {!loading && topics.length > 0 && (
-          <>
-            <h2 style={{ fontSize: 18, fontWeight: 800, color: '#1C1917', marginBottom: 14, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Your Learning Wiki</h2>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 13 }}>
-              {topics.map(topic => {
-                const bg = SUBJECT_COLORS[topic.subject_tag] || SUBJECT_COLORS['History']
-                return (
-                  <Link key={topic.id} href={`/wiki/${topic.slug}`} style={{ textDecoration: 'none' }}>
-                    <div style={{ borderRadius: 22, background: bg, padding: '18px 18px 16px', boxShadow: '0 6px 20px rgba(0,0,0,0.15)', position: 'relative', overflow: 'hidden' }}>
-                      {topic.subject_tag && (
-                        <div style={{ display: 'inline-flex', alignItems: 'center', background: 'rgba(0,0,0,0.28)', borderRadius: 9, padding: '4px 10px', marginBottom: 8 }}>
-                          <span style={{ color: '#fff', fontSize: 10, fontWeight: 700, letterSpacing: '0.5px' }}>{topic.subject_tag.toUpperCase()}</span>
-                        </div>
-                      )}
-                      <div style={{ color: '#fff', fontSize: 20, fontWeight: 700, fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: topic.description ? 4 : 0 }}>{topic.title}</div>
-                      {topic.description && <div style={{ color: 'rgba(255,255,255,0.8)', fontSize: 13, lineHeight: 1.4 }}>{topic.description}</div>}
-                      <div style={{ position: 'absolute', top: 16, right: 18, color: 'rgba(255,255,255,0.5)', fontSize: 22 }}>›</div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {filtered.map(t => {
+              const color = SUBJECT_COLORS[t.subject_tag] || SUBJECT_COLORS.default
+              return (
+                <Link key={t.id} href={`/topic/${t.slug}`} style={{ textDecoration: 'none' }}>
+                  <div style={{ background: '#fff', borderRadius: 18, padding: '16px 18px', display: 'flex', gap: 14, alignItems: 'center', boxShadow: '0 2px 12px rgba(45,42,38,0.06)', borderLeft: `4px solid ${color}` }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 10, fontWeight: 700, color, letterSpacing: '0.5px', marginBottom: 3 }}>{t.subject_tag?.toUpperCase() || 'TOPIC'}</div>
+                      <div style={{ fontWeight: 700, fontSize: 15, color: '#2D2A26', fontFamily: "'Nunito', sans-serif" }}>{t.title}</div>
+                      {t.description && <div style={{ fontSize: 13, color: '#6B6560', marginTop: 2, lineHeight: 1.4 }}>{t.description}</div>}
                     </div>
-                  </Link>
-                )
-              })}
-            </div>
-          </>
+                    <div style={{ color: '#D1C8D8', fontSize: 18 }}>›</div>
+                  </div>
+                </Link>
+              )
+            })}
+          </div>
         )}
       </div>
+
       <Nav active="explore" />
     </div>
   )
