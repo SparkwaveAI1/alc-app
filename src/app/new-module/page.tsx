@@ -12,7 +12,17 @@ export default function NewModule() {
   const [step, setStep] = useState<Step>('input')
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
-  const [ai, setAi] = useState<Record<string, unknown> | null>(null)
+  type AIResult = {
+    overview: string
+    subject_tag: string
+    subtopics: Array<{ title: string; description: string; emoji: string }>
+    key_vocabulary: Array<{ word: string; definition: string }>
+    try_first_questions: string[]
+    youtube_search_suggestions: string[]
+    flashcard_seeds: Array<{ front: string; back: string }>
+    fun_fact: string
+  }
+  const [ai, setAi] = useState<AIResult | null>(null)
   const [error, setError] = useState('')
 
   async function generate() {
@@ -161,21 +171,21 @@ export default function NewModule() {
             {ai.fun_fact && (
               <div style={{ background: 'linear-gradient(135deg, #FEF3C7, #FDE68A)', borderRadius: 22, padding: '18px 20px', boxShadow: '0 4px 16px rgba(245,158,11,0.2)' }}>
                 <div style={{ fontSize: 13, fontWeight: 700, color: '#92400E', marginBottom: 6 }}>⚡ FUN FACT</div>
-                <div style={{ fontSize: 15, color: '#78350F', lineHeight: 1.5 }}>{String(ai.fun_fact)}</div>
+                <div style={{ fontSize: 15, color: '#78350F', lineHeight: 1.5 }}>{ai.fun_fact}</div>
               </div>
             )}
 
             {/* Overview */}
             <div style={{ background: '#fff', borderRadius: 22, padding: '20px', boxShadow: '0 4px 16px rgba(0,0,0,0.07)' }}>
               <div style={{ fontSize: 13, fontWeight: 700, color: '#7C3AED', marginBottom: 8 }}>📖 OVERVIEW</div>
-              <div style={{ fontSize: 15, color: '#1C1917', lineHeight: 1.6 }}>{String(ai.overview)}</div>
+              <div style={{ fontSize: 15, color: '#1C1917', lineHeight: 1.6 }}>{ai.overview}</div>
             </div>
 
             {/* Subtopics */}
             <div style={{ background: '#fff', borderRadius: 22, padding: '20px', boxShadow: '0 4px 16px rgba(0,0,0,0.07)' }}>
               <div style={{ fontSize: 13, fontWeight: 700, color: '#7C3AED', marginBottom: 12 }}>🗺️ WHAT YOU&apos;LL EXPLORE</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {(ai.subtopics as Array<{title: string; description: string; emoji: string}>).map((s, i) => (
+                {ai.subtopics.map((s, i) => (
                   <div key={i} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
                     <div style={{ width: 36, height: 36, borderRadius: 10, background: '#F7D8FF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>{s.emoji}</div>
                     <div>
@@ -191,7 +201,7 @@ export default function NewModule() {
             <div style={{ background: '#fff', borderRadius: 22, padding: '20px', boxShadow: '0 4px 16px rgba(0,0,0,0.07)' }}>
               <div style={{ fontSize: 13, fontWeight: 700, color: '#EA580C', marginBottom: 12 }}>🧠 TRY FIRST — THINK ABOUT THIS</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {(ai.try_first_questions as string[]).map((q, i) => (
+                {ai.try_first_questions.map((q, i) => (
                   <div key={i} style={{ background: '#FFF7ED', borderRadius: 12, padding: '12px 14px', fontSize: 14, color: '#1C1917', lineHeight: 1.5, borderLeft: '3px solid #EA580C' }}>
                     {q}
                   </div>
@@ -201,16 +211,16 @@ export default function NewModule() {
 
             {/* Flashcard preview */}
             <div style={{ background: '#fff', borderRadius: 22, padding: '20px', boxShadow: '0 4px 16px rgba(0,0,0,0.07)' }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: '#065F46', marginBottom: 12 }}>🃏 FLASHCARDS ({(ai.flashcard_seeds as unknown[]).length} cards will be created)</div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: '#065F46', marginBottom: 12 }}>🃏 FLASHCARDS ({ai.flashcard_seeds.length} cards will be created)</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {(ai.flashcard_seeds as Array<{front: string; back: string}>).slice(0, 3).map((c, i) => (
+                {ai.flashcard_seeds.slice(0, 3).map((c, i) => (
                   <div key={i} style={{ background: '#F0FDF4', borderRadius: 12, padding: '10px 14px', borderLeft: '3px solid #22C55E' }}>
                     <div style={{ fontSize: 13, fontWeight: 600, color: '#065F46' }}>Q: {c.front}</div>
                     <div style={{ fontSize: 12, color: '#6B7280', marginTop: 3 }}>A: {c.back}</div>
                   </div>
                 ))}
-                {(ai.flashcard_seeds as unknown[]).length > 3 && (
-                  <div style={{ fontSize: 12, color: '#9CA3AF', textAlign: 'center' }}>+{(ai.flashcard_seeds as unknown[]).length - 3} more flashcards</div>
+                {ai.flashcard_seeds.length > 3 && (
+                  <div style={{ fontSize: 12, color: '#9CA3AF', textAlign: 'center' }}>+{ai.flashcard_seeds.length - 3} more flashcards</div>
                 )}
               </div>
             </div>
@@ -219,7 +229,7 @@ export default function NewModule() {
             <div style={{ background: '#fff', borderRadius: 22, padding: '20px', boxShadow: '0 4px 16px rgba(0,0,0,0.07)' }}>
               <div style={{ fontSize: 13, fontWeight: 700, color: '#DC2626', marginBottom: 12 }}>▶️ SUGGESTED YOUTUBE SEARCHES</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {(ai.youtube_search_suggestions as string[]).map((s, i) => (
+                {ai.youtube_search_suggestions.map((s, i) => (
                   <a key={i} href={`https://www.youtube.com/results?search_query=${encodeURIComponent(s)}`} target="_blank" rel="noopener noreferrer" style={{ background: '#FEF2F2', borderRadius: 12, padding: '10px 14px', fontSize: 14, color: '#DC2626', textDecoration: 'none', fontWeight: 500 }}>
                     🔍 {s}
                   </a>
