@@ -63,7 +63,7 @@ export default function ReviewPage() {
               display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
               textAlign: 'center', cursor: 'pointer', boxShadow: '0 4px 24px rgba(45,42,38,0.12)',
             }}>
-              <div style={{ fontSize: 11, fontWeight: 800, color: '#9E9792', letterSpacing: '1px', marginBottom: 18 }}>QUESTION</div>
+              <div style={{ fontSize: 11, fontWeight: 800, color: '#6B6560', letterSpacing: '1px', marginBottom: 18 }}>QUESTION</div>
               <div style={{ fontSize: 20, fontWeight: 700, color: '#2D2A26', lineHeight: 1.5 }}>{card?.front}</div>
               <div style={{ marginTop: 24, fontSize: 32 }}>👆</div>
             </div>

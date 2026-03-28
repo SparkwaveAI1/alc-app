@@ -232,7 +232,7 @@ export default function TopicPage() {
                 }}>Save video</button>
               </div>
               {resources.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '20px', color: '#9E9792', fontSize: 13 }}>No videos yet — paste a link above!</div>
+                <div style={{ textAlign: 'center', padding: '20px', color: '#6B6560', fontSize: 13 }}>No videos yet — paste a link above!</div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {resources.map(r => (
@@ -304,7 +304,7 @@ export default function TopicPage() {
                   display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
                   textAlign: 'center', cursor: 'pointer', boxShadow: '0 4px 20px rgba(45,42,38,0.1)',
                 }}>
-                  <div style={{ fontSize: 11, fontWeight: 800, color: '#9E9792', letterSpacing: '1px', marginBottom: 16 }}>QUESTION</div>
+                  <div style={{ fontSize: 11, fontWeight: 800, color: '#6B6560', letterSpacing: '1px', marginBottom: 16 }}>QUESTION</div>
                   <div style={{ fontSize: 18, fontWeight: 700, color: '#2D2A26' }}>{card?.front}</div>
                   <div style={{ marginTop: 20, fontSize: 26, opacity: 0.6 }}>👆</div>
                 </div>
@@ -372,7 +372,7 @@ export default function TopicPage() {
               {notes.map(n => (
                 <div key={n.id} style={{ background: '#F9F6F0', borderRadius: 14, padding: '12px', borderLeft: `3px solid ${color}` }}>
                   <p style={{ margin: 0, fontSize: 13, color: '#2D2A26', lineHeight: 1.5 }}>{n.content}</p>
-                  <div style={{ fontSize: 11, color: '#9E9792', marginTop: 6 }}>{new Date(n.created_at).toLocaleDateString()}</div>
+                  <div style={{ fontSize: 11, color: '#6B6560', marginTop: 6 }}>{new Date(n.created_at).toLocaleDateString()}</div>
                 </div>
               ))}
             </div>

@@ -61,13 +61,13 @@ export default function MePage() {
             <div key={s.label} style={{ background: '#fff', borderRadius: 16, padding: '14px 8px', textAlign: 'center', boxShadow: '0 2px 10px rgba(45,42,38,0.06)' }}>
               <div style={{ fontSize: 24, marginBottom: 4 }}>{s.icon}</div>
               <div style={{ fontSize: 16, fontWeight: 800, color: '#2D2A26', fontFamily: "'Nunito', sans-serif" }}>{s.value}</div>
-              <div style={{ fontSize: 10, color: '#9E9792', marginTop: 2 }}>{s.label}</div>
+              <div style={{ fontSize: 10, color: '#6B6560', marginTop: 2 }}>{s.label}</div>
             </div>
           ))}
         </div>
 
         {/* Menu */}
-        <div style={{ fontSize: 11, fontWeight: 700, color: '#9E9792', letterSpacing: '0.8px', marginBottom: 12 }}>LEARNING</div>
+        <div style={{ fontSize: 11, fontWeight: 700, color: '#6B6560', letterSpacing: '0.8px', marginBottom: 12 }}>LEARNING</div>
         {[
           { icon: '📚', label: 'My Portfolio', href: '/portfolio' },
           { icon: '🌍', label: 'Learning Areas', href: '/areas' },
@@ -83,7 +83,7 @@ export default function MePage() {
           </Link>
         ))}
 
-        <div style={{ fontSize: 11, fontWeight: 700, color: '#9E9792', letterSpacing: '0.8px', marginBottom: 12, marginTop: 18 }}>OTHER</div>
+        <div style={{ fontSize: 11, fontWeight: 700, color: '#6B6560', letterSpacing: '0.8px', marginBottom: 12, marginTop: 18 }}>OTHER</div>
         {[
           { icon: '❓', label: 'Help Guide', href: '/guide' },
           { icon: '👨‍👩‍👧', label: 'Parent Dashboard', href: '/parent' },

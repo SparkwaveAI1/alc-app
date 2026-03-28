@@ -115,7 +115,7 @@ function LoginForm() {
         </div>
       </form>
 
-      <p style={{ marginTop: 24, fontSize: 12, color: '#9E9792', textAlign: 'center' }}>
+      <p style={{ marginTop: 24, fontSize: 12, color: '#6B6560', textAlign: 'center' }}>
         Nayomi: PIN 1234 · Scott: PIN 5678
       </p>
     </div>

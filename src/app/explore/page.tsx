@@ -60,7 +60,7 @@ export default function ExplorePage() {
 
         {/* Learning areas */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: '#9E9792', letterSpacing: '0.8px' }}>LEARNING AREAS</div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: '#6B6560', letterSpacing: '0.8px' }}>LEARNING AREAS</div>
           {selectedArea && <button onClick={() => setSelectedArea(null)} style={{ background: 'none', border: 'none', color: '#7C5CBF', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>Show all</button>}
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 24 }}>
@@ -78,7 +78,7 @@ export default function ExplorePage() {
 
         {/* Topics grid */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: '#9E9792', letterSpacing: '0.8px' }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: '#6B6560', letterSpacing: '0.8px' }}>
             {selectedArea ? areas.find(a => a.id === selectedArea)?.title?.toUpperCase() + ' TOPICS' : 'MY TOPICS'}
             {filtered.length > 0 && <span style={{ marginLeft: 6, color: '#C4BCC8' }}>({filtered.length})</span>}
           </div>
@@ -86,7 +86,7 @@ export default function ExplorePage() {
         </div>
 
         {loading ? (
-          <div style={{ textAlign: 'center', padding: '30px', color: '#9E9792' }}>Loading...</div>
+          <div style={{ textAlign: 'center', padding: '30px', color: '#6B6560' }}>Loading...</div>
         ) : filtered.length === 0 ? (
           <div style={{ background: '#fff', borderRadius: 20, padding: '32px 20px', textAlign: 'center', boxShadow: '0 2px 12px rgba(45,42,38,0.06)' }}>
             <div style={{ fontSize: 40, marginBottom: 10 }}>🌱</div>

@@ -86,7 +86,7 @@ export default function TodayPage() {
           <div style={{ textAlign: 'center', background: '#fff', borderRadius: 14, padding: '8px 14px', boxShadow: '0 2px 12px rgba(45,42,38,0.06)' }}>
             <div style={{ fontSize: 22 }}>🔥</div>
             <div style={{ fontSize: 15, fontWeight: 800, color: '#E8715A', fontFamily: "'Nunito', sans-serif" }}>{profile?.streak_days || 0}</div>
-            <div style={{ fontSize: 10, color: '#9E9792', fontWeight: 500 }}>day streak</div>
+            <div style={{ fontSize: 10, color: '#6B6560', fontWeight: 500 }}>day streak</div>
           </div>
         </div>
       </div>
@@ -131,7 +131,7 @@ export default function TodayPage() {
         )}
 
         {/* Today section */}
-        <div style={{ fontSize: 11, fontWeight: 700, color: '#9E9792', letterSpacing: '0.8px', marginBottom: 12, marginTop: 4 }}>EXPLORE TODAY</div>
+        <div style={{ fontSize: 11, fontWeight: 700, color: '#6B6560', letterSpacing: '0.8px', marginBottom: 12, marginTop: 4 }}>EXPLORE TODAY</div>
 
         {topics.length === 0 ? (
           <div style={{ background: '#fff', borderRadius: 20, padding: '28px 20px', textAlign: 'center', boxShadow: '0 2px 12px rgba(45,42,38,0.06)', marginBottom: 12 }}>
@@ -159,7 +159,7 @@ export default function TodayPage() {
         )}
 
         {/* Quick actions */}
-        <div style={{ fontSize: 11, fontWeight: 700, color: '#9E9792', letterSpacing: '0.8px', marginBottom: 12, marginTop: 8 }}>QUICK ACTIONS</div>
+        <div style={{ fontSize: 11, fontWeight: 700, color: '#6B6560', letterSpacing: '0.8px', marginBottom: 12, marginTop: 8 }}>QUICK ACTIONS</div>
         <div style={{ display: 'flex', gap: 10 }}>
           {[
             { icon: '🧭', label: 'Explore', href: '/explore', color: '#EDE8F9', text: '#7C5CBF' },

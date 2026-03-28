@@ -36,7 +36,7 @@ export default function Nav({ active }: { active?: string }) {
             <span style={{ fontSize: 22, lineHeight: 1 }}>{tab.icon}</span>
             <span style={{
               fontSize: 10, fontWeight: isActive ? 700 : 500,
-              color: isActive ? '#7C5CBF' : '#9E9792',
+              color: isActive ? '#7C5CBF' : '#6B6560',
               fontFamily: "'DM Sans', system-ui, sans-serif",
               letterSpacing: '0.2px',
             }}>{tab.label}</span>

@@ -38,8 +38,8 @@ export default function CreatePage() {
           })}
         </div>
 
-        <div style={{ fontSize: 11, fontWeight: 700, color: '#9E9792', letterSpacing: '0.8px', marginBottom: 12 }}>RECENT CREATIONS</div>
-        <div style={{ background: '#fff', borderRadius: 20, padding: '20px', textAlign: 'center', color: '#9E9792', boxShadow: '0 2px 12px rgba(45,42,38,0.06)' }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: '#6B6560', letterSpacing: '0.8px', marginBottom: 12 }}>RECENT CREATIONS</div>
+        <div style={{ background: '#fff', borderRadius: 20, padding: '20px', textAlign: 'center', color: '#6B6560', boxShadow: '0 2px 12px rgba(45,42,38,0.06)' }}>
           <div style={{ fontSize: 40, marginBottom: 10 }}>🎨</div>
           <p style={{ margin: 0, fontSize: 14 }}>Nothing created yet. Start making something!</p>
         </div>
