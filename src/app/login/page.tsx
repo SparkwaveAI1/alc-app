@@ -4,12 +4,17 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
 import { Suspense } from 'react'
 
+const USERS = [
+  { label: 'Nayomi', emoji: '🌟', email: 'nayomi@alc.local' },
+  { label: 'Scott', emoji: '👤', email: 'scott@alc.local' },
+]
+
 function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const nextPath = searchParams.get('next') || '/'
 
-  const [email, setEmail] = useState('')
+  const [selectedUser, setSelectedUser] = useState<typeof USERS[0] | null>(null)
   const [pin, setPin] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -21,13 +26,17 @@ function LoginForm() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!selectedUser) return
     setLoading(true)
     setError('')
 
-    const { error: authError } = await supabase.auth.signInWithPassword({ email, password: pin })
+    const { error: authError } = await supabase.auth.signInWithPassword({
+      email: selectedUser.email,
+      password: pin,
+    })
 
     if (authError) {
-      setError('Wrong email or PIN. Try again.')
+      setError('Wrong PIN. Try again.')
       setLoading(false)
       return
     }
@@ -55,43 +64,54 @@ function LoginForm() {
 
       <form onSubmit={handleLogin} style={{ width: '100%', maxWidth: 380 }}>
         <div style={{ background: '#fff', borderRadius: 24, padding: '32px 24px', boxShadow: '0 4px 24px rgba(45,42,38,0.08)' }}>
-          <div style={{ marginBottom: 16 }}>
-            <label style={{ fontSize: 12, fontWeight: 700, color: '#6B6560', letterSpacing: '0.5px', display: 'block', marginBottom: 6 }}>EMAIL</label>
-            <input
-              type="email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              placeholder="nayomi@alc.local"
-              required
-              autoComplete="email"
-              style={{
-                width: '100%', borderRadius: 12, border: '1.5px solid #E8E2D9',
-                padding: '12px 14px', fontSize: 15, background: '#FFF7ED',
-                color: '#2D2A26', outline: 'none', fontFamily: "'DM Sans', sans-serif",
-                boxSizing: 'border-box', transition: 'border-color 0.15s',
-              }}
-            />
+
+          {/* Who are you? */}
+          <p style={{ margin: '0 0 12px', fontSize: 12, fontWeight: 700, color: '#6B6560', letterSpacing: '0.5px' }}>WHO ARE YOU?</p>
+          <div style={{ display: 'flex', gap: 12, marginBottom: 28 }}>
+            {USERS.map(u => (
+              <button
+                key={u.label}
+                type="button"
+                onClick={() => { setSelectedUser(u); setPin(''); setError(''); }}
+                style={{
+                  flex: 1, padding: '16px 8px', borderRadius: 16,
+                  border: selectedUser?.label === u.label ? '2.5px solid #7C5CBF' : '2px solid #E8E2D9',
+                  background: selectedUser?.label === u.label ? '#F3EEFF' : '#FFF7ED',
+                  cursor: 'pointer', transition: 'all 0.15s',
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
+                }}
+              >
+                <span style={{ fontSize: 32 }}>{u.emoji}</span>
+                <span style={{ fontSize: 14, fontWeight: 700, color: selectedUser?.label === u.label ? '#7C5CBF' : '#2D2A26', fontFamily: "'Nunito', sans-serif" }}>{u.label}</span>
+              </button>
+            ))}
           </div>
 
-          <div style={{ marginBottom: 24 }}>
-            <label style={{ fontSize: 12, fontWeight: 700, color: '#6B6560', letterSpacing: '0.5px', display: 'block', marginBottom: 6 }}>PIN</label>
-            <input
-              type="password"
-              value={pin}
-              onChange={e => setPin(e.target.value)}
-              placeholder="••••"
-              required
-              maxLength={8}
-              inputMode="numeric"
-              autoComplete="current-password"
-              style={{
-                width: '100%', borderRadius: 12, border: '1.5px solid #E8E2D9',
-                padding: '12px 14px', fontSize: 24, letterSpacing: '6px',
-                background: '#FFF7ED', color: '#2D2A26', outline: 'none',
-                fontFamily: "'DM Sans', sans-serif", boxSizing: 'border-box',
-              }}
-            />
-          </div>
+          {/* PIN entry — only shown after selecting user */}
+          {selectedUser && (
+            <div style={{ marginBottom: 24 }}>
+              <label style={{ fontSize: 12, fontWeight: 700, color: '#6B6560', letterSpacing: '0.5px', display: 'block', marginBottom: 6 }}>
+                ENTER YOUR PIN
+              </label>
+              <input
+                type="password"
+                value={pin}
+                onChange={e => setPin(e.target.value.replace(/\D/g, '').slice(0, 8))}
+                placeholder="••••"
+                required
+                inputMode="numeric"
+                autoComplete="current-password"
+                autoFocus
+                style={{
+                  width: '100%', borderRadius: 12, border: '1.5px solid #E8E2D9',
+                  padding: '12px 14px', fontSize: 28, letterSpacing: '8px',
+                  background: '#FFF7ED', color: '#2D2A26', outline: 'none',
+                  fontFamily: "'DM Sans', sans-serif", boxSizing: 'border-box',
+                  textAlign: 'center',
+                }}
+              />
+            </div>
+          )}
 
           {error && (
             <div style={{ background: '#FEE2E2', borderRadius: 10, padding: '10px 14px', marginBottom: 16, color: '#DC2626', fontSize: 14, fontWeight: 600 }}>
@@ -101,23 +121,20 @@ function LoginForm() {
 
           <button
             type="submit"
-            disabled={loading || !email || !pin}
+            disabled={loading || !selectedUser || !pin}
             style={{
-              width: '100%', background: loading || !email || !pin ? '#E5E7EB' : 'linear-gradient(135deg, #7C5CBF, #9C7DD4)',
-              color: loading || !email || !pin ? '#9E9792' : '#fff',
+              width: '100%',
+              background: loading || !selectedUser || !pin ? '#E5E7EB' : 'linear-gradient(135deg, #7C5CBF, #9C7DD4)',
+              color: loading || !selectedUser || !pin ? '#9E9792' : '#fff',
               border: 'none', borderRadius: 14, padding: '14px',
-              fontWeight: 800, fontSize: 16, cursor: loading || !email || !pin ? 'default' : 'pointer',
+              fontWeight: 800, fontSize: 16, cursor: loading || !selectedUser || !pin ? 'default' : 'pointer',
               fontFamily: "'Nunito', sans-serif", transition: 'all 0.15s',
             }}
           >
-            {loading ? 'Logging in...' : 'Let\'s go! 🚀'}
+            {loading ? 'Logging in...' : "Let's go! 🚀"}
           </button>
         </div>
       </form>
-
-      <p style={{ marginTop: 24, fontSize: 12, color: '#6B6560', textAlign: 'center' }}>
-        Nayomi: PIN 1234 · Scott: PIN 5678
-      </p>
     </div>
   )
 }
