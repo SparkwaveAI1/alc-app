@@ -48,7 +48,7 @@ Keep it to 3 suggestions. Be specific and curious — show how ideas connect acr
   const aiRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
     method: 'POST',
     headers: { 'Authorization': `Bearer ${OR_KEY}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ model: 'google/gemini-2.0-flash', messages: [{ role: 'user', content: prompt }], temperature: 0.8, max_tokens: 400 }),
+    body: JSON.stringify({ model: 'google/gemini-2.0-flash-001', messages: [{ role: 'user', content: prompt }], temperature: 0.8, max_tokens: 400 }),
   })
   const aiData = await aiRes.json()
   const content = aiData.choices?.[0]?.message?.content || '[]'

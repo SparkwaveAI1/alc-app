@@ -38,7 +38,7 @@ Your coaching rules:
         'X-Title': 'ALC Learning Companion — Aria',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.0-flash',
+        model: 'google/gemini-2.0-flash-001',
         messages: [
           { role: 'system', content: systemPrompt },
           ...messages,

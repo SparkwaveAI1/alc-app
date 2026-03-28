@@ -55,7 +55,7 @@ Provide exactly 4-6 subtopics, 6-8 vocabulary words, 3 try-first questions, 3 yo
         'X-Title': 'ALC Learning Companion',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.0-flash',
+        model: 'google/gemini-2.0-flash-001',
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.7,
         max_tokens: 2000,
