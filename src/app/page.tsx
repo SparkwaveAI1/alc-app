@@ -23,26 +23,46 @@ export default function TodayPage() {
   const [profile, setProfile] = useState<any>(null)
   const [topics, setTopics] = useState<any[]>([])
   const [dueCount, setDueCount] = useState(0)
+  const [challenge, setChallenge] = useState<any>(null)
+  const [challengeAnswer, setChallengeAnswer] = useState('')
+  const [challengeDone, setChallengeDone] = useState(false)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     async function load() {
       try {
-        const [pRes, tRes, rRes] = await Promise.all([
+        const [pRes, tRes, rRes, cRes] = await Promise.all([
           fetch('/api/profile').then(r => r.json()),
           fetch(`${SB_URL}/rest/v1/topics?order=created_at.desc&limit=3`, {
             headers: { apikey: SB_ANON!, Authorization: `Bearer ${SB_ANON}` }
           }).then(r => r.json()),
           fetch('/api/review-queue').then(r => r.json()),
+          fetch('/api/daily-challenge').then(r => r.json()),
         ])
         setProfile(pRes)
         setTopics(Array.isArray(tRes) ? tRes : [])
         setDueCount(Array.isArray(rRes?.cards) ? rRes.cards.length : 0)
+        if (cRes?.id) {
+          setChallenge(cRes)
+          setChallengeDone(cRes.completed || false)
+        }
       } catch {}
       setLoading(false)
     }
     load()
   }, [])
+
+  const handleChallengeSubmit = async () => {
+    if (!challengeAnswer.trim() || !challenge?.id) return
+    try {
+      await fetch('/api/daily-challenge', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: challenge.id, answer: challengeAnswer }),
+      })
+      setChallengeDone(true)
+    } catch {}
+  }
 
   if (loading) return (
     <div style={{ minHeight: '100vh', background: 'linear-gradient(160deg, #EDE8F9 0%, #FDFBF7 60%)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 14 }}>
@@ -85,6 +105,29 @@ export default function TodayPage() {
               <div style={{ color: 'rgba(255,255,255,0.8)', fontSize: 20 }}>→</div>
             </div>
           </Link>
+        )}
+
+        {/* Daily challenge */}
+        {challenge && (
+          <div style={{ background: '#fff', borderRadius: 20, padding: '18px 20px', marginBottom: 12, boxShadow: '0 2px 12px rgba(45,42,38,0.06)' }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: '#F5A623', letterSpacing: '0.8px', marginBottom: 8 }}>💡 TODAY'S CHALLENGE</div>
+            <p style={{ margin: '0 0 12px', fontSize: 14, color: '#2D2A26', lineHeight: 1.5, fontStyle: 'italic' }}>{challenge.question}</p>
+            {challengeDone ? (
+              <div style={{ background: '#E8F5EF', borderRadius: 10, padding: '10px 14px', fontSize: 14, color: '#4CAF7C', fontWeight: 600 }}>✅ Challenge complete!</div>
+            ) : (
+              <div>
+                <textarea
+                  value={challengeAnswer}
+                  onChange={e => setChallengeAnswer(e.target.value)}
+                  placeholder="What do you think? Any answer is a good answer..."
+                  style={{ width: '100%', borderRadius: 12, border: '1.5px solid #E8E2D9', padding: '10px 12px', fontSize: 13, background: '#FFF7ED', color: '#2D2A26', outline: 'none', fontFamily: "'DM Sans', sans-serif", boxSizing: 'border-box', minHeight: 70, resize: 'none' }}
+                />
+                <button onClick={handleChallengeSubmit} disabled={!challengeAnswer.trim()} style={{ marginTop: 8, width: '100%', background: challengeAnswer.trim() ? '#F5A623' : '#E5E7EB', color: challengeAnswer.trim() ? '#fff' : '#9E9792', border: 'none', borderRadius: 10, padding: '8px', fontWeight: 700, fontSize: 13, cursor: challengeAnswer.trim() ? 'pointer' : 'default', fontFamily: "'DM Sans', sans-serif" }}>
+                  Submit ✨
+                </button>
+              </div>
+            )}
+          </div>
         )}
 
         {/* Today section */}

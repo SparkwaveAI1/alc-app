@@ -7,12 +7,22 @@ import Nav from '@/components/Nav'
 export default function MePage() {
   const router = useRouter()
   const [profile, setProfile] = useState<any>(null)
+  const [stats, setStats] = useState({ topics: 0, created: 0, reviewed: 0 })
 
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch('/api/profile')
-        setProfile(await res.json())
+        const [pRes, tRes, aRes] = await Promise.all([
+          fetch('/api/profile').then(r => r.json()),
+          fetch('/api/topics').then(r => r.json()),
+          fetch('/api/artifacts').then(r => r.json()),
+        ])
+        setProfile(pRes)
+        setStats({
+          topics: Array.isArray(tRes) ? tRes.length : 0,
+          created: Array.isArray(aRes) ? aRes.length : 0,
+          reviewed: 0,
+        })
       } catch {}
     }
     load()
@@ -44,9 +54,9 @@ export default function MePage() {
         {/* Stats */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 20 }}>
           {[
-            { icon: '📚', label: 'Topics', value: '3' },
-            { icon: '🎨', label: 'Created', value: '0' },
-            { icon: '🃏', label: 'Reviewed', value: '0' },
+            { icon: '📚', label: 'Topics', value: String(stats.topics) },
+            { icon: '🎨', label: 'Created', value: String(stats.created) },
+            { icon: '🃏', label: 'Reviewed', value: String(stats.reviewed) },
           ].map(s => (
             <div key={s.label} style={{ background: '#fff', borderRadius: 16, padding: '14px 8px', textAlign: 'center', boxShadow: '0 2px 10px rgba(45,42,38,0.06)' }}>
               <div style={{ fontSize: 24, marginBottom: 4 }}>{s.icon}</div>

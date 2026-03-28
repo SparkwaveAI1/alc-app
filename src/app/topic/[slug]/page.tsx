@@ -31,36 +31,44 @@ export default function TopicPage() {
   useEffect(() => {
     async function load() {
       try {
-        const [tRes, cRes, rRes, nRes] = await Promise.all([
-          fetch(`${SB_URL}/rest/v1/topics?slug=eq.${slug}&limit=1`, {
+        // Step 1: fetch topic by slug first to get the real UUID
+        const tRes = await fetch(`${SB_URL}/rest/v1/topics?slug=eq.${slug}&limit=1`, {
+          headers: { apikey: SB_ANON!, Authorization: `Bearer ${SB_ANON}` }
+        }).then(r => r.json())
+
+        if (!Array.isArray(tRes) || !tRes[0]) {
+          setLoading(false)
+          return
+        }
+
+        const t = tRes[0]
+        setTopic(t)
+        const id = t.id
+
+        // Step 2: fetch all related data using the real UUID
+        const [cRes, nRes, linkRes] = await Promise.all([
+          fetch(`${SB_URL}/rest/v1/flashcards?topic_id=eq.${id}&order=created_at`, {
             headers: { apikey: SB_ANON!, Authorization: `Bearer ${SB_ANON}` }
           }).then(r => r.json()),
-          fetch(`${SB_URL}/rest/v1/flashcards?topic_id=${slug}&order=created_at`, {
+          fetch(`${SB_URL}/rest/v1/topic_notes?topic_id=eq.${id}&order=created_at.desc`, {
             headers: { apikey: SB_ANON!, Authorization: `Bearer ${SB_ANON}` }
           }).then(r => r.json()),
-          fetch(`${SB_URL}/rest/v1/resources?topic_id=${slug}`, {
-            headers: { apikey: SB_ANON!, Authorization: `Bearer ${SB_ANON}` }
-          }).then(r => r.json()),
-          fetch(`${SB_URL}/rest/v1/topic_notes?topic_id=${slug}&order=created_at.desc`, {
+          fetch(`${SB_URL}/rest/v1/resource_topic_links?topic_id=eq.${id}`, {
             headers: { apikey: SB_ANON!, Authorization: `Bearer ${SB_ANON}` }
           }).then(r => r.json()),
         ])
-        if (Array.isArray(tRes) && tRes[0]) {
-          setTopic(tRes[0])
-          // Fetch resources for this topic via resource_topic_links
-          const linkRes = await fetch(`${SB_URL}/rest/v1/resource_topic_links?topic_id=eq.${tRes[0].id}`, {
-            headers: { apikey: SB_ANON!, Authorization: `Bearer ${SB_ANON}` }
-          }).then(r => r.json())
-          if (Array.isArray(linkRes) && linkRes.length > 0) {
-            const resourceIds = linkRes.map((l: any) => l.resource_id)
-            const resRes = await fetch(`${SB_URL}/rest/v1/resources?id=in.(${resourceIds.join(',')})`, {
-              headers: { apikey: SB_ANON!, Authorization: `Bearer ${SB_ANON}` }
-            }).then(r => r.json())
-            setResources(Array.isArray(resRes) ? resRes : [])
-          }
-        }
+
         setCards(Array.isArray(cRes) ? cRes : [])
         setNotes(Array.isArray(nRes) ? nRes : [])
+
+        // Step 3: fetch actual resource records from link IDs
+        if (Array.isArray(linkRes) && linkRes.length > 0) {
+          const resourceIds = linkRes.map((l: any) => l.resource_id)
+          const resRes = await fetch(`${SB_URL}/rest/v1/resources?id=in.(${resourceIds.join(',')})`, {
+            headers: { apikey: SB_ANON!, Authorization: `Bearer ${SB_ANON}` }
+          }).then(r => r.json())
+          setResources(Array.isArray(resRes) ? resRes : [])
+        }
       } catch (e) {
         console.error(e)
       }
