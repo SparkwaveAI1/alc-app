@@ -14,7 +14,7 @@ async function generateChallenge(recentTopics: string[]): Promise<{ question: st
     method: 'POST',
     headers: { 'Authorization': `Bearer ${OR_KEY}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      model: 'google/gemini-flash-1.5',
+      model: 'google/gemini-2.0-flash',
       messages: [{
         role: 'user',
         content: `You are creating a daily thinking challenge for Nayomi, a bright 10-year-old. ${topicContext}
