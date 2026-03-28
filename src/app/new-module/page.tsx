@@ -1,13 +1,13 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Nav from '@/components/Nav'
 
 type Step = 'input' | 'generating' | 'preview' | 'done'
 
-export default function NewModule() {
+function NewModuleInner() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [step, setStep] = useState<Step>('input')
@@ -266,5 +266,13 @@ export default function NewModule() {
       </div>
       <Nav active="explore" />
     </div>
+  )
+}
+
+export default function NewModule() {
+  return (
+    <Suspense fallback={<div style={{ minHeight: '100vh', background: '#FFF7ED', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 40 }}>✨</div>}>
+      <NewModuleInner />
+    </Suspense>
   )
 }
