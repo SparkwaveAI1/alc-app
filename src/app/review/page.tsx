@@ -57,7 +57,7 @@ export default function Review() {
     const now = new Date().toISOString()
     // Get all cards due for review (next_review <= now), join with topics for title
     const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/topic_flashcards?next_review=lte.${now}&order=next_review&limit=20&select=*,topics(title)`,
+      `${SUPABASE_URL}/rest/v1/topic_flashcards?or=(next_review.is.null,next_review.lte.${now})&order=next_review.asc.nullsfirst&limit=20&select=*,topics(title)`,
       { headers: { 'apikey': SUPABASE_ANON!, 'Authorization': `Bearer ${SUPABASE_ANON}` } }
     )
     const data = await res.json()
