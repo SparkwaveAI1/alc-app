@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Nav from '@/components/Nav'
 
@@ -9,9 +9,15 @@ type Step = 'input' | 'generating' | 'preview' | 'done'
 
 export default function NewModule() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [step, setStep] = useState<Step>('input')
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
+
+  useEffect(() => {
+    const t = searchParams.get('title')
+    if (t) setTitle(decodeURIComponent(t))
+  }, [])
   type AIResult = {
     overview: string
     subject_tag: string

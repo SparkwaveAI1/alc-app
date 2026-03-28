@@ -142,6 +142,18 @@ export default function Progress() {
               </div>
             )}
 
+            {/* Standards tracker */}
+            <Link href="/standards" style={{ textDecoration: 'none', display: 'block', marginBottom: 16 }}>
+              <div style={{ background: 'linear-gradient(135deg, #1D4ED8, #4338CA)', borderRadius: 22, padding: '18px 20px', display: 'flex', alignItems: 'center', gap: 14, boxShadow: '0 6px 22px rgba(29,78,216,0.3)' }}>
+                <div style={{ width: 48, height: 48, borderRadius: 14, background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, flexShrink: 0 }}>📊</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ color: '#fff', fontSize: 16, fontWeight: 800, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Grade 4 Skills Tracker</div>
+                  <div style={{ color: 'rgba(255,255,255,0.8)', fontSize: 13, marginTop: 2 }}>Track progress against U.S. Common Core standards</div>
+                </div>
+                <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: 22 }}>›</span>
+              </div>
+            </Link>
+
             {/* Portfolio link */}
             <Link href="/portfolio" style={{ textDecoration: 'none', display: 'block' }}>
               <div style={{ background: 'linear-gradient(135deg, #F7D8FF, #ECC6F5)', borderRadius: 22, padding: '18px 20px', display: 'flex', alignItems: 'center', gap: 14, boxShadow: '0 4px 14px rgba(124,58,237,0.15)' }}>

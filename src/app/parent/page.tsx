@@ -101,7 +101,10 @@ export default function ParentDashboard() {
       <div style={{ background: 'linear-gradient(135deg, #1E1B4B 0%, #312E81 50%, #4F46E5 100%)', padding: '40px 20px 24px', position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', top: -10, right: 30, width: 120, height: 120, borderRadius: '50%', background: 'rgba(99,102,241,0.5)', filter: 'blur(40px)' }} />
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative', zIndex: 1, marginBottom: 6 }}>
-          <Link href="/" style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13, textDecoration: 'none' }}>← Nayomi&apos;s App</Link>
+          <div style={{ display: 'flex', gap: 12 }}>
+          <Link href="/" style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13, textDecoration: 'none' }}>← App</Link>
+          <Link href="/standards" style={{ color: 'rgba(255,255,255,0.85)', fontSize: 13, textDecoration: 'none', background: 'rgba(255,255,255,0.15)', borderRadius: 8, padding: '3px 10px', fontWeight: 600 }}>📊 Skills Tracker</Link>
+        </div>
           <div style={{ background: 'rgba(255,255,255,0.15)', borderRadius: 10, padding: '5px 12px', color: '#fff', fontSize: 12, fontWeight: 600 }}>Parent View</div>
         </div>
         <h1 style={{ color: '#fff', fontSize: 26, fontWeight: 800, margin: '8px 0 4px', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Nayomi&apos;s Learning Dashboard</h1>
