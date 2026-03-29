@@ -29,13 +29,20 @@ export async function POST(req: NextRequest) {
 
   const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 
+  // Look up learning_area_id from subject_tag
+  const subjectTag = ai.subject_tag || 'General'
+  const areaSlug = subjectTag.toLowerCase().replace(/\s+/g, '-')
+  const areaRes = await sb(`learning_areas?slug=eq.${areaSlug}&select=id&limit=1`)
+  const learningAreaId = Array.isArray(areaRes) && areaRes[0] ? areaRes[0].id : null
+
   // Save topic
   const [topic] = await sb('topics', 'POST', {
     title,
     slug,
     description,
     overview: ai.overview || ai.fun_fact || title,
-    subject_tag: ai.subject_tag || 'General',
+    subject_tag: subjectTag,
+    learning_area_id: learningAreaId,
     subtopics: ai.subtopics || [],
     try_first_questions: ai.try_first_questions || [],
     key_vocabulary: ai.key_vocabulary || [],
