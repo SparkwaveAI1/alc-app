@@ -28,6 +28,8 @@ export default function TopicPage() {
   // Flashcard state
   const [currentCard, setCurrentCard] = useState(0)
   const [flipped, setFlipped] = useState(false)
+  const [reviewedCards, setReviewedCards] = useState<Record<string, 'knew' | 'retry'>>({})
+  const [retryQueue, setRetryQueue] = useState<any[]>([])
 
   // UI state
   const [expandedSection, setExpandedSection] = useState<'read' | 'watch' | 'create' | null>('read')
@@ -141,6 +143,30 @@ export default function TopicPage() {
       setSubtopicDeep(prev => ({ ...prev, [idx]: data.message || 'No content returned.' }))
     } catch { setSubtopicDeep(prev => ({ ...prev, [idx]: 'Something went wrong. Try again.' })) }
     setLoadingDeep(null)
+  }
+
+  // ── Flashcard review (knew it / try again) ──
+  const handleReview = async (knew_it: boolean) => {
+    const card = cards[currentCard]
+    if (!card) return
+    setReviewedCards(prev => ({ ...prev, [card.id]: knew_it ? 'knew' : 'retry' }))
+    if (!knew_it) {
+      setRetryQueue(prev => prev.find(c => c.id === card.id) ? prev : [...prev, card])
+    }
+    // Record to DB (best effort)
+    fetch('/api/flashcards', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ flashcard_id: card.id, user_id: '0bd079c0-b0b5-401f-937b-d92067a84d75', knew_it }),
+    }).catch(() => {})
+    // Advance to next card
+    if (currentCard < cards.length - 1) {
+      setCurrentCard(c => c + 1); setFlipped(false)
+    } else if (retryQueue.length > 0) {
+      // Cycle through retry queue
+      setCurrentCard(cards.indexOf(retryQueue[0])); setFlipped(false)
+      setRetryQueue(prev => prev.slice(1))
+    }
   }
 
   // ── Add flashcard ──
@@ -518,25 +544,41 @@ export default function TopicPage() {
                   </div>
                 </div>
               </div>
-              <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
-                <button onClick={() => { setCurrentCard(Math.max(0, currentCard - 1)); setFlipped(false) }} disabled={currentCard === 0} style={{
-                  flex: 1, background: currentCard === 0 ? '#E5E7EB' : '#fff', border: '1.5px solid #E8E2D9',
-                  color: currentCard === 0 ? '#9E9792' : '#2D2A26', borderRadius: 12, padding: '8px',
-                  fontWeight: 700, fontSize: 13, cursor: currentCard === 0 ? 'not-allowed' : 'pointer', fontFamily: "'DM Sans', sans-serif",
-                }}>← Prev</button>
-                <div style={{ flex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, color: '#6B6560', fontWeight: 600 }}>
-                  {currentCard + 1} / {cards.length}
+              {/* Review buttons — shown after card is flipped */}
+              {flipped ? (
+                <div style={{ display: 'flex', gap: 10, marginBottom: 10 }}>
+                  <button onClick={() => handleReview(false)} style={{
+                    flex: 1, background: '#FEE2E2', border: 'none', borderRadius: 14, padding: '12px 8px',
+                    fontWeight: 800, fontSize: 14, cursor: 'pointer', color: '#DC2626', fontFamily: "'Nunito', sans-serif",
+                  }}>✗ Try again</button>
+                  <button onClick={() => handleReview(true)} style={{
+                    flex: 1, background: '#D1FAE5', border: 'none', borderRadius: 14, padding: '12px 8px',
+                    fontWeight: 800, fontSize: 14, cursor: 'pointer', color: '#059669', fontFamily: "'Nunito', sans-serif",
+                  }}>✓ Got it!</button>
                 </div>
-                <button onClick={() => { setCurrentCard(Math.min(cards.length - 1, currentCard + 1)); setFlipped(false) }} disabled={currentCard === cards.length - 1} style={{
-                  flex: 1, background: currentCard === cards.length - 1 ? '#E5E7EB' : '#fff', border: '1.5px solid #E8E2D9',
-                  color: currentCard === cards.length - 1 ? '#9E9792' : '#2D2A26', borderRadius: 12, padding: '8px',
-                  fontWeight: 700, fontSize: 13, cursor: currentCard === cards.length - 1 ? 'not-allowed' : 'pointer', fontFamily: "'DM Sans', sans-serif",
-                }}>Next →</button>
-              </div>
+              ) : (
+                <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
+                  <button onClick={() => { setCurrentCard(Math.max(0, currentCard - 1)); setFlipped(false) }} disabled={currentCard === 0} style={{
+                    flex: 1, background: currentCard === 0 ? '#E5E7EB' : '#fff', border: '1.5px solid #E8E2D9',
+                    color: currentCard === 0 ? '#9E9792' : '#2D2A26', borderRadius: 12, padding: '8px',
+                    fontWeight: 700, fontSize: 13, cursor: currentCard === 0 ? 'not-allowed' : 'pointer', fontFamily: "'DM Sans', sans-serif",
+                  }}>← Prev</button>
+                  <div style={{ flex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, color: '#6B6560', fontWeight: 600 }}>
+                    {currentCard + 1} / {cards.length}
+                    {retryQueue.length > 0 && <span style={{ marginLeft: 6, fontSize: 11, color: '#DC2626', fontWeight: 700 }}>· {retryQueue.length} to retry</span>}
+                  </div>
+                  <button onClick={() => { setCurrentCard(Math.min(cards.length - 1, currentCard + 1)); setFlipped(false) }} disabled={currentCard === cards.length - 1 && retryQueue.length === 0} style={{
+                    flex: 1, background: currentCard === cards.length - 1 && retryQueue.length === 0 ? '#E5E7EB' : '#fff', border: '1.5px solid #E8E2D9',
+                    color: currentCard === cards.length - 1 && retryQueue.length === 0 ? '#9E9792' : '#2D2A26', borderRadius: 12, padding: '8px',
+                    fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+                  }}>Next →</button>
+                </div>
+              )}
               <div style={{ display: 'flex', gap: 5, justifyContent: 'center' }}>
-                {cards.map((_, i) => (
+                {cards.map((c, i) => (
                   <button key={i} onClick={() => { setCurrentCard(i); setFlipped(false) }} style={{
-                    width: 8, height: 8, borderRadius: '50%', background: i === currentCard ? color : '#E5E7EB',
+                    width: 8, height: 8, borderRadius: '50%',
+                    background: reviewedCards[c.id] === 'knew' ? '#059669' : reviewedCards[c.id] === 'retry' ? '#DC2626' : i === currentCard ? color : '#E5E7EB',
                     border: 'none', cursor: 'pointer', padding: 0,
                   }} />
                 ))}
