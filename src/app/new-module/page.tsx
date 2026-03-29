@@ -43,7 +43,7 @@ export default function NewModulePage() {
       const data = await res.json()
       if (data.error) throw new Error(data.error)
       setStep('done')
-      setTimeout(() => router.push(`/topic/${data.topic.slug}`), 1500)
+      router.push(`/topic/${data.topic.slug}?new=1`)
     } catch (e) {
       setError(String(e))
       setStep('preview')

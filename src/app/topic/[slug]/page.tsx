@@ -1,6 +1,6 @@
 'use client'
-import { useState, useEffect, useRef } from 'react'
-import { useParams } from 'next/navigation'
+import { useState, useEffect, useRef, Suspense } from 'react'
+import { useParams, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Nav from '@/components/Nav'
 
@@ -15,8 +15,10 @@ const SUBJECT_COLORS: Record<string, string> = {
 
 type Message = { role: 'user' | 'assistant'; content: string }
 
-export default function TopicPage() {
+function TopicPage() {
   const params = useParams()
+  const searchParams = useSearchParams()
+  const isNew = searchParams.get('new') === '1'
   const slug = params.slug as string
   const [topic, setTopic] = useState<any>(null)
   const [cards, setCards] = useState<any[]>([])
@@ -55,6 +57,8 @@ export default function TopicPage() {
   const [chatInput, setChatInput] = useState('')
   const [chatLoading, setChatLoading] = useState(false)
   const chatEndRef = useRef<HTMLDivElement>(null)
+  const [generatingCards, setGeneratingCards] = useState<string | null>(null) // 'chat-N' | 'deep-N' | 'vocab-N'
+  const [savedFromContent, setSavedFromContent] = useState<Set<string>>(new Set())
 
   // Related topics
   const [loadingRelated, setLoadingRelated] = useState(false)
@@ -63,11 +67,18 @@ export default function TopicPage() {
   useEffect(() => {
     async function load() {
       try {
-        const tRes = await fetch(`${SB_URL}/rest/v1/topics?slug=eq.${slug}&limit=1`, {
-          headers: { apikey: SB_ANON!, Authorization: `Bearer ${SB_ANON}` }
-        }).then(r => r.json())
+        // For newly created topics, retry up to 5x with 800ms delay (Supabase replication lag)
+        let tRes = null
+        const maxAttempts = isNew ? 5 : 1
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+          if (attempt > 0) await new Promise(r => setTimeout(r, 800))
+          const res = await fetch(`${SB_URL}/rest/v1/topics?slug=eq.${slug}&limit=1`, {
+            headers: { apikey: SB_ANON!, Authorization: `Bearer ${SB_ANON}` }
+          }).then(r => r.json())
+          if (Array.isArray(res) && res[0]) { tRes = res; break }
+        }
         if (!Array.isArray(tRes) || !tRes[0]) { setLoading(false); return }
-        const t = tRes[0]
+        const t = (tRes as any[])[0]
         setTopic(t)
         const id = t.id
         const [cRes, nRes, linkRes, relRes] = await Promise.all([
@@ -252,6 +263,23 @@ export default function TopicPage() {
     setChatLoading(false)
   }
 
+  // ── Generate flashcards from content ──
+  const handleMakeFlashcards = async (content: string, key: string, count = 2) => {
+    setGeneratingCards(key)
+    try {
+      const res = await fetch('/api/generate-flashcards', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content, topic_id: topic.id, topic_title: topic.title, count }),
+      })
+      const data = await res.json()
+      if (data.cards?.length) {
+        setCards(prev => [...prev, ...data.cards])
+        setSavedFromContent(prev => new Set([...prev, key]))
+      }
+    } catch {}
+    setGeneratingCards(null)
+  }
+
   // ── Generate related topics ──
   const handleGenerateRelated = async () => {
     setLoadingRelated(true)
@@ -357,7 +385,20 @@ export default function TopicPage() {
                       {expandedSubtopic === i && (
                         <div style={{ padding: '12px 14px', background: `${color}08`, borderRadius: '0 0 14px 14px', marginTop: -4 }}>
                           {subtopicDeep[i] ? (
-                            <div style={{ fontSize: 14, color: '#2D2A26', lineHeight: 1.7, whiteSpace: 'pre-line' }}>{subtopicDeep[i]}</div>
+                            <div>
+                              <div style={{ fontSize: 14, color: '#2D2A26', lineHeight: 1.7, whiteSpace: 'pre-line', marginBottom: 12 }}>{subtopicDeep[i]}</div>
+                              {savedFromContent.has(`deep-${i}`) ? (
+                                <div style={{ fontSize: 12, color: '#059669', fontWeight: 700 }}>✓ Flashcards saved!</div>
+                              ) : (
+                                <button onClick={() => handleMakeFlashcards(subtopicDeep[i], `deep-${i}`, 2)} disabled={generatingCards === `deep-${i}`} style={{
+                                  background: generatingCards === `deep-${i}` ? '#E5E7EB' : '#F3EEFF', border: 'none', borderRadius: 10,
+                                  padding: '8px 14px', fontSize: 12, fontWeight: 700, color: generatingCards === `deep-${i}` ? '#6B6560' : '#7C5CBF',
+                                  cursor: generatingCards === `deep-${i}` ? 'default' : 'pointer', fontFamily: "'DM Sans', sans-serif",
+                                }}>
+                                  {generatingCards === `deep-${i}` ? '🧠 Creating...' : '🃏 Make flashcards from this'}
+                                </button>
+                              )}
+                            </div>
                           ) : loadingDeep === i ? (
                             <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#7C5CBF', fontSize: 13, padding: '8px 0' }}>
                               <span style={{ fontSize: 20 }}>🧠</span> Aria is thinking...
@@ -383,9 +424,22 @@ export default function TopicPage() {
                 <div>
                   <div style={{ fontSize: 12, fontWeight: 700, color: color, marginBottom: 10 }}>📚 Key vocabulary</div>
                   {topic.key_vocabulary.map((v: any, i: number) => (
-                    <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 10, paddingBottom: 10, borderBottom: i < topic.key_vocabulary.length - 1 ? '1px solid #F3F0EB' : 'none' }}>
-                      <div style={{ fontWeight: 700, color: '#2D2A26', minWidth: 90, fontSize: 14 }}>{v.word}</div>
-                      <div style={{ color: '#6B6560', flex: 1, fontSize: 13, lineHeight: 1.5 }}>— {v.definition}</div>
+                    <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 10, paddingBottom: 10, borderBottom: i < topic.key_vocabulary.length - 1 ? '1px solid #F3F0EB' : 'none', alignItems: 'center' }}>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: 700, color: '#2D2A26', fontSize: 14 }}>{v.word}</div>
+                        <div style={{ color: '#6B6560', fontSize: 13, lineHeight: 1.5, marginTop: 2 }}>— {v.definition}</div>
+                      </div>
+                      {savedFromContent.has(`vocab-${i}`) ? (
+                        <div style={{ fontSize: 12, color: '#059669', fontWeight: 700, flexShrink: 0 }}>✓</div>
+                      ) : (
+                        <button onClick={() => handleMakeFlashcards(`Word: ${v.word}\nDefinition: ${v.definition}`, `vocab-${i}`, 1)} disabled={generatingCards === `vocab-${i}`} style={{
+                          background: '#F3EEFF', border: 'none', borderRadius: 8, padding: '5px 10px',
+                          fontSize: 11, fontWeight: 700, color: '#7C5CBF', cursor: 'pointer',
+                          flexShrink: 0, fontFamily: "'DM Sans', sans-serif",
+                        }}>
+                          {generatingCards === `vocab-${i}` ? '...' : '+ card'}
+                        </button>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -680,7 +734,7 @@ export default function TopicPage() {
                 </div>
               )}
               {messages.map((m, i) => (
-                <div key={i} style={{ display: 'flex', justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start', marginBottom: 12 }}>
+                <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: m.role === 'user' ? 'flex-end' : 'flex-start', marginBottom: 12 }}>
                   <div style={{
                     maxWidth: '82%', padding: '10px 14px', borderRadius: m.role === 'user' ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
                     background: m.role === 'user' ? 'linear-gradient(135deg, #7C5CBF, #9C7DD4)' : '#fff',
@@ -689,6 +743,20 @@ export default function TopicPage() {
                   }}>
                     {m.content}
                   </div>
+                  {m.role === 'assistant' && (
+                    <div style={{ marginTop: 4 }}>
+                      {savedFromContent.has(`chat-${i}`) ? (
+                        <span style={{ fontSize: 11, color: '#059669', fontWeight: 700 }}>✓ Flashcard saved!</span>
+                      ) : (
+                        <button onClick={() => handleMakeFlashcards(m.content, `chat-${i}`, 1)} disabled={generatingCards === `chat-${i}`} style={{
+                          background: 'none', border: 'none', fontSize: 11, color: '#7C5CBF', fontWeight: 700,
+                          cursor: 'pointer', padding: '2px 4px', fontFamily: "'DM Sans', sans-serif",
+                        }}>
+                          {generatingCards === `chat-${i}` ? '🧠 Creating...' : '🃏 Save as flashcard'}
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
               ))}
               {chatLoading && (
@@ -726,4 +794,8 @@ export default function TopicPage() {
 
     </div>
   )
+}
+
+export default function TopicPageWrapper() {
+  return <Suspense fallback={<div style={{ minHeight: '100vh', background: '#FDFBF7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div style={{ textAlign: 'center' }}><div style={{ fontSize: 48, marginBottom: 12 }}>🧠</div><div style={{ fontFamily: "'Nunito', sans-serif", fontWeight: 700, color: '#7C5CBF' }}>Loading...</div></div></div>}><TopicPage /></Suspense>
 }
