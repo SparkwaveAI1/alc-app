@@ -31,6 +31,7 @@ function TopicPage() {
   const [currentCard, setCurrentCard] = useState(0)
   const [flipped, setFlipped] = useState(false)
   const [reviewedCards, setReviewedCards] = useState<Record<string, 'knew' | 'retry'>>({})
+  const [learnerWiki, setLearnerWiki] = useState<string[]>([])
   const [retryQueue, setRetryQueue] = useState<any[]>([])
 
   // UI state
@@ -105,6 +106,13 @@ function TopicPage() {
           setResources(Array.isArray(resRes) ? resRes : [])
         }
       } catch (e) { console.error(e) }
+      // Fetch learner wiki titles for Aria context
+      const wikiRes = await fetch(`${SB_URL}/rest/v1/topics?select=title&order=created_at.desc&limit=20`, {
+        headers: { apikey: SB_ANON!, Authorization: `Bearer ${SB_ANON}` }
+      }).then(r => r.json())
+      const titles = Array.isArray(wikiRes) ? wikiRes.map((t: any) => t.title).filter((t: string) => t !== topic?.title) : []
+      setLearnerWiki(titles)
+
       setLoading(false)
       // Fetch learner ID for flashcard reviews
       const lr = await fetch('/api/learner-id').then(r => r.json()).catch(() => ({ id: null }))
@@ -257,7 +265,7 @@ function TopicPage() {
     try {
       const res = await fetch('/api/chat', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: newMessages, topic: topic.title, context: topic.overview }),
+        body: JSON.stringify({ messages: newMessages, topic: topic.title, context: topic.overview, learner_wiki: learnerWiki }),
       })
       const data = await res.json()
       setMessages(prev => [...prev, { role: 'assistant', content: data.message || 'Hmm, something went wrong. Try again!' }])

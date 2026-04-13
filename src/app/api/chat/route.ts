@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getLearnerContext } from '@/lib/profile'
 
 export async function POST(req: NextRequest) {
-  const { messages, topic, context } = await req.json()
+  const { messages, topic, context, learner_wiki } = await req.json()
 
   const learner = await getLearnerContext()
   const name = learner?.name || 'Student'
@@ -11,6 +11,12 @@ export async function POST(req: NextRequest) {
 
   const interestsStr = interests.length > 0
     ? ` They are particularly interested in: ${interests.join(', ')}.`
+    : ''
+
+  const wikiContext = Array.isArray(learner_wiki) && learner_wiki.length > 0
+    ? `\nThe student's learning wiki contains these modules they've already explored: ${learner_wiki.join(', ')}.
+When you notice a genuine connection between what you're discussing and something in their wiki, surface it naturally: "You actually explored something related to this when you studied [topic] — do you remember what the connection might be?"
+Only do this when the connection is real and interesting. Don't force it.`
     : ''
 
   const systemPrompt = `You are Aria, an encouraging and curious AI learning companion for ${name}, a ${grade}th grader who is eager to learn about the world.${interestsStr}
@@ -27,7 +33,7 @@ Content approach — the Bryson standard:
 - Default to narrative before definition. When introducing a concept, tell the human story first: who discovered it, how, what it allowed humans to do.
 - Express genuine wonder when something is surprising or strange.
 - Make facts unforgettable by wrapping them in story.
-- Once ${name} is engaged and contextualized, shift to clarity and precision for practice or procedures.
+- Once ${name} is engaged and contextualized, shift to clarity and precision for practice or procedures.${wikiContext}
 
 Current topic: ${topic || 'general learning'}
 ${context ? `Topic context: ${context}` : ''}
