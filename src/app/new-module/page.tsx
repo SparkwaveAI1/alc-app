@@ -1,26 +1,39 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import Nav from '@/components/Nav'
 
 export default function NewModulePage() {
   const router = useRouter()
-  const [step, setStep] = useState<'input' | 'generating' | 'preview' | 'done'>('input')
-  const [title, setTitle] = useState('')
+  const [step, setStep] = useState<'input' | 'generating' | 'preview' | 'finding-connections' | 'connections' | 'done'>('input')
+  const [Title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [ai, setAi] = useState<any>(null)
+  const [savedTopic, setSavedTopic] = useState<any>(null)
+  const [connectionSuggestion, setConnectionSuggestion] = useState<any>(null)
+  const [autoRedirectTimer, setAutoRedirectTimer] = useState<number | null>(null)
   const [error, setError] = useState('')
 
+  // Auto-redirect after 8s from connections screen
+  useEffect(() => {
+    if (step !== 'connections') return
+    const timer = window.setTimeout(() => {
+      if (savedTopic) router.push(`/topic/${savedTopic.slug}?new=1`)
+    }, 8000)
+    setAutoRedirectTimer(timer)
+    return () => clearTimeout(timer)
+  }, [step, savedTopic, router])
+
   const handleGenerate = async () => {
-    if (!title.trim()) return
+    if (!Title.trim()) return
     setStep('generating')
     setError('')
     try {
       const res = await fetch('/api/generate-module', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: title.trim(), description: description.trim() }),
+        body: JSON.stringify({ title: Title.trim(), description: description.trim() }),
       })
       const data = await res.json()
       if (data.error) throw new Error(data.error)
@@ -38,16 +51,54 @@ export default function NewModulePage() {
       const res = await fetch('/api/topics', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: title.trim(), description: description.trim(), ai }),
+        body: JSON.stringify({ title: Title.trim(), description: description.trim(), ai }),
       })
       const data = await res.json()
       if (data.error) throw new Error(data.error)
-      setStep('done')
-      router.push(`/topic/${data.topic.slug}?new=1`)
+      const topic = data.topic
+      setSavedTopic(topic)
+
+      // Check for connections before redirecting
+      setStep('finding-connections')
+      try {
+        const relRes = await fetch('/api/related-topics', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            topic_id: topic.id,
+            title: Title.trim(),
+            overview: ai?.overview || '',
+            subject_tag: ai?.subject_tag || 'General',
+          }),
+        })
+        const relData = await relRes.json()
+        const existing = (relData.suggestions || []).filter((s: any) => s.is_existing && s.topic)
+        if (existing.length > 0) {
+          setConnectionSuggestion(existing[0])
+        } else {
+          // No connections found — redirect directly
+          router.push(`/topic/${topic.slug}?new=1`)
+        }
+      } catch {
+        // Connection check failed — just go to the new module
+        router.push(`/topic/${topic.slug}?new=1`)
+      }
     } catch (e) {
       setError(String(e))
       setStep('preview')
     }
+  }
+
+  const handleSeeConnection = () => {
+    if (autoRedirectTimer) clearTimeout(autoRedirectTimer)
+    if (connectionSuggestion?.topic?.slug) {
+      router.push(`/topic/${connectionSuggestion.topic.slug}`)
+    }
+  }
+
+  const handleStartNewModule = () => {
+    if (autoRedirectTimer) clearTimeout(autoRedirectTimer)
+    if (savedTopic) router.push(`/topic/${savedTopic.slug}?new=1`)
   }
 
   return (
@@ -57,15 +108,17 @@ export default function NewModulePage() {
       <div style={{ background: 'linear-gradient(135deg, #7C5CBF, #9C7DD4)', padding: '48px 20px 28px', borderRadius: '0 0 28px 28px' }}>
         <Link href="/explore" style={{ color: 'rgba(255,255,255,0.85)', fontSize: 13, textDecoration: 'none', display: 'block', marginBottom: 12 }}>← Back</Link>
         <h1 style={{ margin: 0, fontSize: 26, fontWeight: 800, color: '#fff', fontFamily: "'Nunito', sans-serif" }}>
-          {step === 'done' ? '🎉 Module Created!' : 'Create a Module ✨'}
+          {step === 'connections' ? '🔗 A connection!' : step === 'done' ? '🎉 Module Created!' : 'Create a Module ✨'}
         </h1>
       </div>
 
       <div style={{ padding: '24px 16px' }}>
+
+        {/* Input step */}
         {step === 'input' && (
           <div style={{ maxWidth: 500 }}>
             <input
-              value={title} onChange={e => setTitle(e.target.value)}
+              value={Title} onChange={e => setTitle(e.target.value)}
               placeholder="What do you want to learn about?"
               style={{
                 width: '100%', borderRadius: 14, border: '1.5px solid #E8E2D9', padding: '14px 16px',
@@ -82,10 +135,10 @@ export default function NewModulePage() {
                 fontFamily: "'DM Sans', sans-serif", boxSizing: 'border-box', minHeight: 100, resize: 'vertical',
               }}
             />
-            <button onClick={handleGenerate} disabled={!title.trim()} style={{
-              width: '100%', background: title.trim() ? '#7C5CBF' : '#E5E7EB',
-              color: title.trim() ? '#fff' : '#9E9792', border: 'none', borderRadius: 12,
-              padding: '12px', fontWeight: 700, fontSize: 15, cursor: title.trim() ? 'pointer' : 'default',
+            <button onClick={handleGenerate} disabled={!Title.trim()} style={{
+              width: '100%', background: Title.trim() ? '#7C5CBF' : '#E5E7EB',
+              color: Title.trim() ? '#fff' : '#9E9792', border: 'none', borderRadius: 12,
+              padding: '12px', fontWeight: 700, fontSize: 15, cursor: Title.trim() ? 'pointer' : 'default',
               fontFamily: "'DM Sans', sans-serif",
             }}>
               Generate with AI ✨
@@ -94,6 +147,7 @@ export default function NewModulePage() {
           </div>
         )}
 
+        {/* Generating step */}
         {step === 'generating' && (
           <div style={{ textAlign: 'center', padding: '40px 20px' }}>
             <div style={{ fontSize: 48, marginBottom: 16, animation: 'spin 1s linear infinite' }}>✨</div>
@@ -102,6 +156,16 @@ export default function NewModulePage() {
           </div>
         )}
 
+        {/* Finding connections step */}
+        {step === 'finding-connections' && (
+          <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+            <div style={{ fontSize: 48, marginBottom: 16, animation: 'spin 1s linear infinite' }}>🔗</div>
+            <div style={{ fontSize: 18, fontWeight: 700, color: '#7C5CBF', fontFamily: "'Nunito', sans-serif" }}>Finding your connections...</div>
+            <p style={{ color: '#6B6560', fontSize: 14, marginTop: 8 }}>Checking your learning history</p>
+          </div>
+        )}
+
+        {/* Preview step */}
         {step === 'preview' && ai && (
           <div style={{ maxWidth: 500 }}>
             {ai.fun_fact && (
@@ -149,6 +213,63 @@ export default function NewModulePage() {
           </div>
         )}
 
+        {/* Connection moment interstitial */}
+        {step === 'connections' && connectionSuggestion && (
+          <div style={{ textAlign: 'center', maxWidth: 420, margin: '0 auto' }}>
+            <div style={{ fontSize: 56, marginBottom: 16 }}>🔗</div>
+            <h2 style={{
+              fontSize: 24, fontWeight: 900, color: '#2D2A26',
+              fontFamily: "'Nunito', sans-serif", marginBottom: 12, lineHeight: 1.2,
+            }}>
+              Your learning connects!
+            </h2>
+            <p style={{ fontSize: 15, color: '#6B6560', lineHeight: 1.6, marginBottom: 28 }}>
+              Before you dive in — this topic connects to something you've already explored:
+            </p>
+
+            {/* Connection card */}
+            <div style={{
+              background: '#fff', borderRadius: 20, padding: '20px 18px',
+              boxShadow: '0 4px 20px rgba(124,92,191,0.15)', marginBottom: 24, textAlign: 'left',
+            }}>
+              <div style={{ fontSize: 28, marginBottom: 8 }}>
+                {connectionSuggestion.topic?.subject_tag === 'History' ? '🏛️' :
+                 connectionSuggestion.topic?.subject_tag === 'Science' ? '🔬' :
+                 connectionSuggestion.topic?.subject_tag === 'Geography' ? '🌍' :
+                 connectionSuggestion.topic?.subject_tag === 'Math' ? '🔢' :
+                 connectionSuggestion.topic?.subject_tag === 'Art & Music' ? '🎨' : '📚'}
+              </div>
+              <div style={{ fontSize: 17, fontWeight: 800, color: '#2D2A26', marginBottom: 8, fontFamily: "'Nunito', sans-serif" }}>
+                {connectionSuggestion.topic?.title}
+              </div>
+              <p style={{ fontSize: 13, color: '#6B6560', margin: 0, lineHeight: 1.6, fontStyle: 'italic' }}>
+                "{connectionSuggestion.note}"
+              </p>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <button onClick={handleSeeConnection} style={{
+                width: '100%', background: '#fff', color: '#7C5CBF', border: '2px solid #7C5CBF',
+                borderRadius: 14, padding: '14px', fontWeight: 700, fontSize: 15, cursor: 'pointer',
+                fontFamily: "'DM Sans', sans-serif",
+              }}>
+                See the connection ↗
+              </button>
+              <button onClick={handleStartNewModule} style={{
+                width: '100%', background: '#7C5CBF', color: '#fff', border: 'none',
+                borderRadius: 14, padding: '14px', fontWeight: 700, fontSize: 15, cursor: 'pointer',
+                fontFamily: "'DM Sans', sans-serif", boxShadow: '0 4px 12px rgba(124,92,191,0.25)',
+              }}>
+                Start my new module →
+              </button>
+            </div>
+            <p style={{ fontSize: 11, color: '#C4B5E0', marginTop: 16 }}>
+              Auto-redirecting in 8 seconds...
+            </p>
+          </div>
+        )}
+
+        {/* Done step — shown briefly before redirect if no connections found */}
         {step === 'done' && (
           <div style={{ textAlign: 'center', padding: '40px 20px' }}>
             <div style={{ fontSize: 64, marginBottom: 16 }}>🎉</div>
@@ -156,6 +277,7 @@ export default function NewModulePage() {
             <p style={{ color: '#6B6560', margin: 0 }}>Redirecting to your new module...</p>
           </div>
         )}
+
       </div>
 
       <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
