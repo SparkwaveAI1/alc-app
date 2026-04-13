@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getLearnerContext } from '@/lib/profile'
 
 const SB = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL!
 const KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -8,17 +9,21 @@ export async function POST(req: NextRequest) {
   const { content, topic_id, topic_title, count = 3 } = await req.json()
   if (!content || !topic_id) return NextResponse.json({ error: 'content and topic_id required' }, { status: 400 })
 
-  const prompt = `You are creating flashcards for Nayomi, a curious 10-year-old advanced learner.
+  const learner = await getLearnerContext()
+  const name = learner?.name || 'Student'
+  const grade = learner?.grade || 4
+
+  const prompt = `You are creating flashcards for ${name}, a curious ${grade}th grader.
 
 Topic: "${topic_title}"
-Content she just learned:
+Content they just learned:
 "${content.slice(0, 1500)}"
 
 Create exactly ${count} flashcard(s) from the most important facts or ideas in this content.
 Rules:
 - Questions should be specific and testable, not vague
 - Answers should be concise (1-2 sentences max)
-- Use language a 10-year-old would understand
+- Use language a ${grade}th grader would understand
 - Focus on the most interesting or important facts
 
 Return ONLY valid JSON array (no markdown):

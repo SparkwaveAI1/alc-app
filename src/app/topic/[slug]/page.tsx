@@ -44,6 +44,7 @@ function TopicPage() {
   const [newFront, setNewFront] = useState('')
   const [newBack, setNewBack] = useState('')
   const [savingCard, setSavingCard] = useState(false)
+  const [learnerId, setLearnerId] = useState<string | null>(null)
 
   // Notes / resources
   const [newNote, setNewNote] = useState('')
@@ -105,6 +106,9 @@ function TopicPage() {
         }
       } catch (e) { console.error(e) }
       setLoading(false)
+      // Fetch learner ID for flashcard reviews
+      const lr = await fetch('/api/learner-id').then(r => r.json()).catch(() => ({ id: null }))
+      if (lr.id) setLearnerId(lr.id)
     }
     if (slug) load()
   }, [slug])
@@ -168,7 +172,7 @@ function TopicPage() {
     fetch('/api/flashcards', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ flashcard_id: card.id, user_id: '0bd079c0-b0b5-401f-937b-d92067a84d75', knew_it }),
+      body: JSON.stringify({ flashcard_id: card.id, user_id: learnerId, knew_it }), // learnerId fetched from /api/learner-id
     }).catch(() => {})
     // Advance to next card
     if (currentCard < cards.length - 1) {

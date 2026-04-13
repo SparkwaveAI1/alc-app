@@ -1,20 +1,39 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getLearnerContext } from '@/lib/profile'
 
 export async function POST(req: NextRequest) {
   const { title, description } = await req.json()
 
   if (!title) return NextResponse.json({ error: 'Title required' }, { status: 400 })
 
-  const prompt = `You are creating a structured learning module for Nayomi, a 10-year-old advanced learner who loves history, geography, art, writing, and creative expression.
+  const learner = await getLearnerContext()
+  const name = learner?.name || 'Student'
+  const grade = learner?.grade || 4
+  const interests = learner?.interests || []
+
+  const interestsStr = interests.length > 0
+    ? ` They are particularly interested in: ${interests.join(', ')}.`
+    : ''
+
+  // Bryson standard: module overviews must begin with human story, not definition.
+  // The prompt instructs the AI to lead with narrative — who discovered, how, what human need drove it.
+  const prompt = `You are creating a structured learning module for ${name}, a ${grade}th grader who is curious about the world.${interestsStr}
 
 Topic: "${title}"
 Description: "${description || 'No additional description provided'}"
 
-Create a rich, engaging learning module in JSON format. The language should be warm, curious, and age-appropriate for a bright 10-year-old — never condescending, always exciting.
+Create a rich, engaging learning module in JSON format.
+
+IMPORTANT — The Bryson Standard:
+- Begin the overview with a human story: who discovered this, how, what strange accident or wrong turn led to the breakthrough
+- Before defining a thing, tell the story of the person or moment that revealed it
+- Express genuine wonder when something is surprising
+- The overview should make ${name} feel: "I HAVE to learn more about this"
+- After the story hook, the overview can include a sentence of contextual framing
 
 Return ONLY valid JSON with this exact structure:
 {
-  "overview": "2-3 sentence engaging introduction to this topic that makes it feel exciting and relevant",
+  "overview": "A 2-3 sentence introduction that begins with human story or discovery moment — NOT a definition. Make it feel like the start of an adventure.",
   "subject_tag": "one of: History, Geography, Science, Writing, Math, Art, Music, Life Skills, Culture",
   "subtopics": [
     { "title": "Subtopic title", "description": "One sentence what this covers", "emoji": "relevant emoji" },
@@ -24,8 +43,8 @@ Return ONLY valid JSON with this exact structure:
     { "word": "word or term", "definition": "simple kid-friendly definition" }
   ],
   "try_first_questions": [
-    "Question that gets Nayomi thinking before she learns — no wrong answers",
-    "Another open question",
+    "Question that gets ${name} thinking before they learn — no wrong answers, pure curiosity",
+    "Another open, inviting question",
     "A creative or imaginative question related to the topic"
   ],
   "youtube_search_suggestions": [
@@ -40,10 +59,10 @@ Return ONLY valid JSON with this exact structure:
     { "front": "...", "back": "..." },
     { "front": "...", "back": "..." }
   ],
-  "fun_fact": "One amazing fact about this topic that will blow Nayomi's mind"
+  "fun_fact": "One amazing, surprising fact about this topic"
 }
 
-Provide exactly 4-6 subtopics, 6-8 vocabulary words, 3 try-first questions, 3 youtube suggestions, and 5 flashcard seeds.`
+Provide exactly 4-6 subtopics, 6-8 vocabulary words, 3 try-first questions, 3 youtube suggestions, and 5 flashcard seeds. Make every word count — this is for a curious young mind who deserves excellence.`
 
   try {
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {

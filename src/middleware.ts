@@ -1,14 +1,14 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-const PUBLIC_PATHS = ['/login']
+const PUBLIC_PATHS = ['/login', '/onboarding']
 const PARENT_PATHS = ['/parent', '/standards']
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // Skip auth for public paths and API routes
-  if (PUBLIC_PATHS.includes(pathname) || pathname.startsWith('/api/')) {
+  if (PUBLIC_PATHS.some(p => pathname.startsWith(p)) || pathname.startsWith('/api/')) {
     return NextResponse.next()
   }
 
@@ -47,6 +47,26 @@ export async function middleware(request: NextRequest) {
       url.pathname = '/'
       return NextResponse.redirect(url)
     }
+  }
+
+  // Check if learner profile exists — if not, redirect to onboarding
+  // Uses anon key since learner_profile is not RLS-protected
+  const profileRes = await fetch(
+    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/learner_profile?limit=1`,
+    {
+      headers: {
+        'apikey': process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
+      },
+    }
+  )
+  const profiles = await profileRes.json()
+  const hasProfile = Array.isArray(profiles) && profiles.length > 0
+
+  if (!hasProfile) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/onboarding'
+    return NextResponse.redirect(url)
   }
 
   return supabaseResponse
