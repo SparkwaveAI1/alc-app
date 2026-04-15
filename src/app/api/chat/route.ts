@@ -59,17 +59,23 @@ Your coaching rules:
   const geminiUrl = `https://generativelanguage.googleapis.com/v1/models/${geminiModel}:generateContent?key=${GEMINI_API_KEY}`
 
   try {
+    // Gemini v1 API: system instruction must be prepended to first user message
+    const allContents = [
+      ...messages.map((m: { role: string; content: string }) => ({
+        role: m.role === 'user' ? 'user' : 'model',
+        parts: [{ text: m.content }],
+      })),
+    ]
+    // Inject system prompt at start of first user message
+    if (allContents.length > 0 && allContents[0].role === 'user') {
+      allContents[0].parts[0].text = `${systemPrompt}\n\n${allContents[0].parts[0].text}`
+    }
+
     const response = await fetch(geminiUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        contents: [
-          { role: 'system', parts: [{ text: systemPrompt }] },
-          ...messages.map((m: { role: string; content: string }) => ({
-            role: m.role === 'user' ? 'user' : 'model',
-            parts: [{ text: m.content }],
-          })),
-        ],
+        contents: allContents,
         generationConfig: {
           temperature: 0.8,
           maxOutputTokens: 400,
