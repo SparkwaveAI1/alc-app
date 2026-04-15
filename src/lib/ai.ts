@@ -36,19 +36,12 @@ export interface AIResponse {
   raw?: unknown
 }
 
+// ---------------------------------------------------------------------------
+// Core completion helpers
+// ---------------------------------------------------------------------------
+
 function geminiRole(role: string): 'user' | 'model' {
   return role === 'user' ? 'user' : 'model'
-}
-
-/**
- * Single-prompt completion (no conversation history).
- */
-export async function chatComplete(prompt: string, options?: {
-  system?: string
-  temperature?: number
-  maxTokens?: number
-}): Promise<AIResponse> {
-  return chatCompleteWithHistory([], prompt, options)
 }
 
 /**
@@ -67,21 +60,17 @@ export async function chatCompleteWithHistory(history: ChatMessage[], newMessage
     if (!key) throw new Error('AI not configured: GOOGLE_GEMINI_API_KEY not set')
     const url = `https://generativelanguage.googleapis.com/v1/models/${GEMINI_MODEL}:generateContent?key=${key}`
 
-    // Build contents: system as first user turn, then full history, then new message
     const contents: { role: string; parts: { text: string }[] }[] = []
 
-    // Inject system instruction as first user message (Gemini v1 API requirement)
     if (options?.system) {
       contents.push({ role: 'user', parts: [{ text: options.system }] })
     }
 
-    // Add history (already has system if present)
     for (const msg of history) {
-      if (msg.role === 'system') continue // already handled above
+      if (msg.role === 'system') continue
       contents.push({ role: geminiRole(msg.role), parts: [{ text: msg.content }] })
     }
 
-    // Add the new message
     contents.push({ role: 'user', parts: [{ text: newMessage }] })
 
     const res = await fetch(url, {
@@ -139,6 +128,69 @@ export async function chatCompleteWithHistory(history: ChatMessage[], newMessage
 
   throw new Error(`Unknown AI provider: ${PROVIDER}`)
 }
+
+/**
+ * Single-prompt completion (no conversation history).
+ */
+export async function chatComplete(prompt: string, options?: {
+  system?: string
+  temperature?: number
+  maxTokens?: number
+}): Promise<AIResponse> {
+  return chatCompleteWithHistory([], prompt, options)
+}
+
+// ---------------------------------------------------------------------------
+// Vision
+// ---------------------------------------------------------------------------
+
+/**
+ * Vision completion — sends an image + text prompt and returns the text response.
+ * Only supported when AI_PROVIDER=gemini.
+ */
+export async function visionComplete(options: {
+  imageBase64: string   // base64 string, no prefix
+  mimeType: string      // 'image/jpeg' or 'image/png'
+  prompt: string
+  temperature?: number
+  maxTokens?: number
+}): Promise<AIResponse> {
+  if (PROVIDER !== 'gemini') {
+    throw new Error('visionComplete only supports AI_PROVIDER=gemini')
+  }
+
+  const key = getGeminiKey()
+  if (!key) throw new Error('AI not configured: GOOGLE_GEMINI_API_KEY not set')
+  const url = `https://generativelanguage.googleapis.com/v1/models/${GEMINI_MODEL}:generateContent?key=${key}`
+
+  const { imageBase64, mimeType, prompt: text, temperature = 0.8, maxTokens = 800 } = options
+
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{
+        role: 'user',
+        parts: [
+          { inlineData: { mimeType, data: imageBase64 } },
+          { text: text },
+        ],
+      }],
+      generationConfig: { temperature, maxOutputTokens: maxTokens },
+    }),
+  })
+
+  const data = await res.json()
+  const content = data.candidates?.[0]?.content?.parts?.[0]?.text
+  if (!content) {
+    throw new Error(`Vision error: ${JSON.stringify(data.error || data).slice(0, 300)}`)
+  }
+  return { content, raw: data }
+}
+
+// ---------------------------------------------------------------------------
+// JSON parsing
+// ---------------------------------------------------------------------------
 
 /**
  * Parse JSON from an AI response that may be wrapped in markdown fences.
