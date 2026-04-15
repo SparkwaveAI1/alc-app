@@ -64,7 +64,7 @@ Return ONLY valid JSON:
       mimeType,
       prompt,
       temperature: 0.8,
-      maxTokens: 800,
+      maxTokens: 1500,
     })
 
     const parsed = parseAIJSON<AnalyzeResponse>(content)
