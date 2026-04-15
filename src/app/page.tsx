@@ -130,6 +130,27 @@ export default function TodayPage() {
           </div>
         )}
 
+        {/* I Found Something */}
+        <Link href="/found" style={{ textDecoration: 'none' }}>
+          <div style={{
+            background: 'linear-gradient(135deg, #E8715A, #F5A623)',
+            borderRadius: 20, padding: '18px 20px', marginBottom: 12,
+            display: 'flex', alignItems: 'center', gap: 14,
+            boxShadow: '0 4px 20px rgba(232,113,90,0.25)',
+          }}>
+            <div style={{ fontSize: 36 }}>📸</div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontWeight: 800, fontSize: 16, color: '#fff', fontFamily: "'Nunito', sans-serif" }}>
+                I Found Something
+              </div>
+              <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.85)', marginTop: 2 }}>
+                Show Aria what caught your eye
+              </div>
+            </div>
+            <div style={{ color: 'rgba(255,255,255,0.8)', fontSize: 20 }}>→</div>
+          </div>
+        </Link>
+
         {/* Today section */}
         <div style={{ fontSize: 11, fontWeight: 700, color: '#6B6560', letterSpacing: '0.8px', marginBottom: 12, marginTop: 4 }}>EXPLORE TODAY</div>
 
