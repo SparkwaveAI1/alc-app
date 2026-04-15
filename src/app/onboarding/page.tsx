@@ -70,7 +70,8 @@ export default function OnboardingPage() {
         }),
       })
       if (!res.ok) throw new Error('Save failed')
-      router.replace('/')
+      // Full page reload to ensure fresh session state
+      window.location.href = '/'
     } catch (e) {
       setError('Something went wrong. Try again.')
       setSaving(false)
