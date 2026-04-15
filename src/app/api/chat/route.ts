@@ -50,33 +50,35 @@ Your coaching rules:
 9. Occasionally use emojis to stay warm and engaging
 10. If ${name} is frustrated, acknowledge it and make it feel smaller: "This is genuinely tricky — let's break it into pieces"`
 
+  const GEMINI_API_KEY = process.env.GOOGLE_GEMINI_API_KEY || process.env.GEMINI_API_KEY
+  if (!GEMINI_API_KEY) {
+    return NextResponse.json({ error: 'AI not configured: GOOGLE_GEMINI_API_KEY not set' }, { status: 500 })
+  }
+
+  const geminiModel = 'gemini-2.0-flash-001'
+  const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${GEMINI_API_KEY}`
+
   try {
-    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    const response = await fetch(geminiUrl, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
-        'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://alc-app-one.vercel.app',
-        'X-Title': 'ALC Learning Companion',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'google/gemini-2.0-flash-001',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          ...messages,
-        ],
-        temperature: 0.8,
-        max_tokens: 400,
+        contents: messages.map((m: { role: string; content: string }) => ({
+          role: m.role === 'user' ? 'user' : 'model',
+          parts: [{ text: m.content }],
+        })),
+        generationConfig: {
+          temperature: 0.8,
+          maxOutputTokens: 400,
+        },
+        systemInstruction: {
+          parts: [{ text: systemPrompt }],
+        },
       }),
     })
 
-    if (!response.ok) {
-      const errText = await response.text()
-      console.error('OpenRouter error:', response.status, errText)
-      return NextResponse.json({ error: `OpenRouter ${response.status}: ${errText.slice(0,200)}` }, { status: 500 })
-    }
     const data = await response.json()
-    const content = data.choices?.[0]?.message?.content
+    const content = data.candidates?.[0]?.content?.parts?.[0]?.text
 
     if (!content) {
       console.error('No content in response:', JSON.stringify(data).slice(0,300))
