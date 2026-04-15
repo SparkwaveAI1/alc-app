@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getLearnerContext } from '@/lib/profile'
+import { chatCompleteWithHistory } from '@/lib/ai'
 
 export async function POST(req: NextRequest) {
   const { messages, topic, context, learner_wiki } = await req.json()
@@ -50,46 +51,16 @@ Your coaching rules:
 9. Occasionally use emojis to stay warm and engaging
 10. If ${name} is frustrated, acknowledge it and make it feel smaller: "This is genuinely tricky — let's break it into pieces"`
 
-  const GEMINI_API_KEY = process.env.GOOGLE_GEMINI_API_KEY || process.env.GEMINI_API_KEY
-  if (!GEMINI_API_KEY) {
-    return NextResponse.json({ error: 'AI not configured: GOOGLE_GEMINI_API_KEY not set' }, { status: 500 })
-  }
-
-  const geminiModel = 'gemini-2.5-flash'
-  const geminiUrl = `https://generativelanguage.googleapis.com/v1/models/${geminiModel}:generateContent?key=${GEMINI_API_KEY}`
-
   try {
-    // Gemini v1 API: system instruction must be prepended to first user message
-    const allContents = [
-      ...messages.map((m: { role: string; content: string }) => ({
-        role: m.role === 'user' ? 'user' : 'model',
-        parts: [{ text: m.content }],
-      })),
-    ]
-    // Inject system prompt at start of first user message
-    if (allContents.length > 0 && allContents[0].role === 'user') {
-      allContents[0].parts[0].text = `${systemPrompt}\n\n${allContents[0].parts[0].text}`
-    }
+    // Last message is the new one; history is everything before it
+    const lastMsg = messages[messages.length - 1]
+    const history = messages.slice(0, -1)
 
-    const response = await fetch(geminiUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: allContents,
-        generationConfig: {
-          temperature: 0.8,
-          maxOutputTokens: 400,
-        },
-      }),
-    })
-
-    const data = await response.json()
-    const content = data.candidates?.[0]?.content?.parts?.[0]?.text
-
-    if (!content) {
-      console.error('No content in response:', JSON.stringify(data).slice(0,300))
-      return NextResponse.json({ error: 'No content returned', detail: JSON.stringify(data).slice(0,200) }, { status: 500 })
-    }
+    const { content } = await chatCompleteWithHistory(
+      history,
+      lastMsg.content,
+      { system: systemPrompt, temperature: 0.8, maxTokens: 400 }
+    )
     return NextResponse.json({ message: content })
   } catch (err) {
     console.error('Chat error:', err)

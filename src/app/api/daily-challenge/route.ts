@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getLearnerContext } from '@/lib/profile'
+import { chatComplete, parseAIJSON } from '@/lib/ai'
 
 const SB = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL!
 const KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!
-const OR_KEY = process.env.OPENROUTER_API_KEY!
 const h = (extra = {}) => ({ 'apikey': KEY, 'Authorization': `Bearer ${KEY}`, 'Content-Type': 'application/json', ...extra })
 
 async function generateChallenge(learnerName: string, learnerGrade: number, recentTopics: string[]): Promise<{ question: string; hint: string }> {
@@ -11,14 +11,7 @@ async function generateChallenge(learnerName: string, learnerGrade: number, rece
     ? `The learner has recently studied: ${recentTopics.slice(0, 5).join(', ')}.`
     : 'The learner is just getting started. Great opportunity for a standalone curiosity sparker.'
 
-  const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-    method: 'POST',
-    headers: { 'Authorization': `Bearer ${OR_KEY}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: 'google/gemini-2.0-flash-001',
-      messages: [{
-        role: 'user',
-        content: `You are creating a daily thinking challenge for ${learnerName}, a bright ${learnerGrade}th grader. ${topicContext}
+  const prompt = `You are creating a daily thinking challenge for ${learnerName}, a bright ${learnerGrade}th grader. ${topicContext}
 
 Create one engaging question that makes them think, wonder, or connect ideas. It should be:
 - Open-ended (no single right answer)
@@ -27,16 +20,10 @@ Create one engaging question that makes them think, wonder, or connect ideas. It
 - ${learnerGrade}th-grade appropriate but not easy
 - The kind of question you'd keep turning over in your head all day
 
-Return ONLY valid JSON: {"question": "the question", "hint": "a gentle nudge if they get stuck — one sentence"}`,
-      }],
-      temperature: 0.9,
-      max_tokens: 200,
-    }),
-  })
-  const data = await res.json()
-  const content = data.choices?.[0]?.message?.content || '{}'
-  const cleaned = content.replace(/^```json\s*/i, '').replace(/```\s*$/, '').trim()
-  return JSON.parse(cleaned)
+Return ONLY valid JSON: {"question": "the question", "hint": "a gentle nudge if they get stuck — one sentence"}`
+
+  const { content } = await chatComplete(prompt, { temperature: 0.9, maxTokens: 200 })
+  return parseAIJSON(content)
 }
 
 export async function GET() {

@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getLearnerContext } from '@/lib/profile'
+import { chatComplete, parseAIJSON } from '@/lib/ai'
 
 const SB = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL!
 const KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!
-const OR_KEY = process.env.OPENROUTER_API_KEY!
 
 export async function POST(req: NextRequest) {
   const { content, topic_id, topic_title, count = 3 } = await req.json()
@@ -33,26 +33,8 @@ Return ONLY valid JSON array (no markdown):
 ]`
 
   try {
-    const aiRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${OR_KEY}`,
-        'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://alc-app-one.vercel.app',
-        'X-Title': 'ALC Learning Companion',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.0-flash-001',
-        messages: [{ role: 'user', content: prompt }],
-        temperature: 0.7,
-        max_tokens: 600,
-      }),
-    })
-
-    const aiData = await aiRes.json()
-    const raw = aiData.choices?.[0]?.message?.content || '[]'
-    const cleaned = raw.replace(/^```json\s*/i, '').replace(/```\s*$/, '').trim()
-    const cards = JSON.parse(cleaned)
+    const { content } = await chatComplete(prompt, { temperature: 0.7, maxTokens: 600 })
+    const cards = parseAIJSON<Array<{ front: string; back: string }>>(content)
 
     // Save each card to DB
     const saved = []

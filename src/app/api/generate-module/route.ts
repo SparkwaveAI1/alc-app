@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getLearnerContext } from '@/lib/profile'
+import { chatComplete, parseAIJSON } from '@/lib/ai'
 
 export async function POST(req: NextRequest) {
   const { title, description } = await req.json()
@@ -65,34 +66,11 @@ Return ONLY valid JSON with this exact structure:
 Provide exactly 4-6 subtopics, 6-8 vocabulary words, 3 try-first questions, 3 youtube suggestions, and 5 flashcard seeds. Make every word count — this is for a curious young mind who deserves excellence.`
 
   try {
-    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
-        'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://alc-app-one.vercel.app',
-        'X-Title': 'ALC Learning Companion',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.0-flash-001',
-        messages: [{ role: 'user', content: prompt }],
-        temperature: 0.7,
-        max_tokens: 2000,
-      }),
-    })
-
-    const data = await response.json()
-    const content = data.choices?.[0]?.message?.content
-
-    if (!content) return NextResponse.json({ error: 'No response from AI' }, { status: 500 })
-
-    // Strip markdown code fences if present
-    const cleaned = content.replace(/^```json\s*/i, '').replace(/```\s*$/, '').trim()
-    const parsed = JSON.parse(cleaned)
-
+    const { content } = await chatComplete(prompt, { temperature: 0.7, maxTokens: 2000 })
+    const parsed = parseAIJSON(content)
     return NextResponse.json(parsed)
   } catch (err) {
     console.error('Generate module error:', err)
-    return NextResponse.json({ error: 'Failed to generate module' }, { status: 500 })
+    return NextResponse.json({ error: String(err) }, { status: 500 })
   }
 }

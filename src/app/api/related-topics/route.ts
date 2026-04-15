@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { chatComplete, parseAIJSON } from '@/lib/ai'
 
 const SB = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL!
 const KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!
-const OR_KEY = process.env.OPENROUTER_API_KEY!
 const h = (extra: Record<string, string> = {}) => ({ 'apikey': KEY, 'Authorization': `Bearer ${KEY}`, 'Content-Type': 'application/json', ...extra })
 
 // GET — fetch persisted connections for a topic
@@ -64,23 +64,10 @@ Return ONLY valid JSON array (max 3 items, only include existing topics):
 
 If nothing in the existing list connects, return: []`
 
-  const aiRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-    method: 'POST',
-    headers: { 'Authorization': `Bearer ${OR_KEY}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: 'google/gemini-2.0-flash-001',
-      messages: [{ role: 'user', content: prompt }],
-      temperature: 0.8,
-      max_tokens: 500,
-    }),
-  })
-  const aiData = await aiRes.json()
-  const content = aiData.choices?.[0]?.message?.content || '[]'
-  const cleaned = content.replace(/^```json\s*/i, '').replace(/```\s*$/, '').trim()
-
+  const { content } = await chatComplete(prompt, { temperature: 0.8, maxTokens: 500 })
   let suggestions: any[] = []
   try {
-    suggestions = JSON.parse(cleaned)
+    suggestions = parseAIJSON(content)
   } catch {
     suggestions = []
   }
