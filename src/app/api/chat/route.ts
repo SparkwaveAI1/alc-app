@@ -63,16 +63,16 @@ Your coaching rules:
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        contents: messages.map((m: { role: string; content: string }) => ({
-          role: m.role === 'user' ? 'user' : 'model',
-          parts: [{ text: m.content }],
-        })),
+        contents: [
+          { role: 'system', parts: [{ text: systemPrompt }] },
+          ...messages.map((m: { role: string; content: string }) => ({
+            role: m.role === 'user' ? 'user' : 'model',
+            parts: [{ text: m.content }],
+          })),
+        ],
         generationConfig: {
           temperature: 0.8,
           maxOutputTokens: 400,
-        },
-        systemInstruction: {
-          parts: [{ text: systemPrompt }],
         },
       }),
     })
