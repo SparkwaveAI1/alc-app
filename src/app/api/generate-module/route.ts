@@ -66,7 +66,7 @@ Return ONLY valid JSON with this exact structure:
 Provide exactly 4-6 subtopics, 6-8 vocabulary words, 3 try-first questions, 3 youtube suggestions, and 5 flashcard seeds. Make every word count — this is for a curious young mind who deserves excellence.`
 
   try {
-    const { content } = await chatComplete(prompt, { temperature: 0.7, maxTokens: 2000 })
+    const { content } = await chatComplete(prompt, { temperature: 0.7, maxTokens: 4000 })
     const parsed = parseAIJSON(content)
     return NextResponse.json(parsed)
   } catch (err) {
