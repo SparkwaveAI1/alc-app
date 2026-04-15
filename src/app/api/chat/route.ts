@@ -55,7 +55,7 @@ Your coaching rules:
     return NextResponse.json({ error: 'AI not configured: GOOGLE_GEMINI_API_KEY not set' }, { status: 500 })
   }
 
-  const geminiModel = 'gemini-pro'
+  const geminiModel = 'gemini-2.5-flash'
   const geminiUrl = `https://generativelanguage.googleapis.com/v1/models/${geminiModel}:generateContent?key=${GEMINI_API_KEY}`
 
   try {
