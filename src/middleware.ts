@@ -31,8 +31,12 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  // Not logged in → redirect to login
-  if (!user) {
+  // Demo mode: if demo_learner_id cookie is set, bypass auth
+  const demoLearnerId = request.cookies.get('demo_learner_id')?.value
+  const isDemoMode = !!demoLearnerId
+
+  // Not logged in → redirect to login (unless demo mode)
+  if (!user && !isDemoMode) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     url.searchParams.set('next', pathname)
@@ -40,8 +44,8 @@ export async function middleware(request: NextRequest) {
   }
 
   // Parent-only paths — check role in user metadata
-  if (PARENT_PATHS.some(p => pathname.startsWith(p))) {
-    const role = user.user_metadata?.role
+  if (!isDemoMode && PARENT_PATHS.some(p => pathname.startsWith(p))) {
+    const role = user!.user_metadata?.role
     if (role !== 'parent') {
       const url = request.nextUrl.clone()
       url.pathname = '/'
@@ -50,9 +54,9 @@ export async function middleware(request: NextRequest) {
   }
 
   // Check if learner profile exists — if not, redirect to onboarding
-  // Uses anon key since learner_profile is not RLS-protected
+  const profileId = isDemoMode ? demoLearnerId : null
   const profileRes = await fetch(
-    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/learner_profile?limit=1`,
+    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/learner_profile${profileId ? `?id=eq.${profileId}` : '?limit=1'}`,
     {
       headers: {
         'apikey': process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -67,6 +71,11 @@ export async function middleware(request: NextRequest) {
     const url = request.nextUrl.clone()
     url.pathname = '/onboarding'
     return NextResponse.redirect(url)
+  }
+
+  // Set demo learner id in response cookie for server components
+  if (isDemoMode) {
+    supabaseResponse.cookies.set('demo_learner_id', demoLearnerId!, { path: '/', maxAge: 86400 })
   }
 
   return supabaseResponse

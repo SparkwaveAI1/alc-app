@@ -44,6 +44,27 @@ function LoginForm() {
     router.replace(nextPath)
   }
 
+  const handleDemo = async () => {
+    setLoading(true)
+    const SB_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const SB_ANON = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    try {
+      const res = await fetch(`${SB_URL}/rest/v1/learner_profile?select=id,display_name&limit=1&order=created_at.desc`, {
+        headers: { apikey: SB_ANON!, Authorization: `Bearer ${SB_ANON}` },
+      })
+      const profiles = await res.json()
+      if (profiles?.[0]?.id) {
+        // Set demo cookie and go home
+        document.cookie = `demo_learner_id=${profiles[0].id}; path=/; max-age=86400`
+        window.location.href = nextPath
+      } else {
+        window.location.href = '/onboarding'
+      }
+    } catch {
+      window.location.href = '/onboarding'
+    }
+  }
+
   return (
     <div style={{
       minHeight: '100vh', background: '#FDFBF7',
@@ -133,6 +154,21 @@ function LoginForm() {
           >
             {loading ? 'Logging in...' : "Let's go! 🚀"}
           </button>
+
+          <div style={{ textAlign: 'center', marginTop: 16 }}>
+            <button
+              type="button"
+              onClick={handleDemo}
+              disabled={loading}
+              style={{
+                background: 'none', border: 'none', color: '#6B6560',
+                fontSize: 13, cursor: loading ? 'default' : 'pointer',
+                fontFamily: "'DM Sans', sans-serif", textDecoration: 'underline',
+              }}
+            >
+              Continue as Demo →
+            </button>
+          </div>
         </div>
       </form>
     </div>
