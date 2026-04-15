@@ -69,8 +69,12 @@ export default function OnboardingPage() {
           interests,
         }),
       })
-      if (!res.ok) throw new Error('Save failed')
-      // Full page reload to ensure fresh session state
+      const data = await res.json()
+      if (!res.ok || data.error) throw new Error(data.error || 'Save failed')
+      // Set demo cookie so middleware allows access without auth
+      if (data.profile?.id) {
+        document.cookie = `demo_learner_id=${data.profile.id}; path=/; max-age=86400`
+      }
       window.location.href = '/'
     } catch (e) {
       setError('Something went wrong. Try again.')
