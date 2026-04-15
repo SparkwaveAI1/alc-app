@@ -56,7 +56,7 @@ Your coaching rules:
   }
 
   const geminiModel = 'gemini-1.5-flash'
-  const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${GEMINI_API_KEY}`
+  const geminiUrl = `https://generativelanguage.googleapis.com/v1/models/${geminiModel}:generateContent?key=${GEMINI_API_KEY}`
 
   try {
     const response = await fetch(geminiUrl, {
