@@ -341,6 +341,27 @@ function TopicPage() {
           </div>
         )}
 
+        {/* Quiz me! */}
+        <Link href={`/quiz/${topic.slug}`} style={{ textDecoration: 'none' }}>
+          <div style={{
+            background: 'linear-gradient(135deg, #4CAF7C, #68D391)',
+            borderRadius: 16, padding: '14px 18px', marginBottom: 12,
+            display: 'flex', alignItems: 'center', gap: 12,
+            boxShadow: '0 3px 14px rgba(76,175,124,0.25)',
+          }}>
+            <div style={{ fontSize: 28 }}>🧠</div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontWeight: 800, fontSize: 15, color: '#fff', fontFamily: "'Nunito', sans-serif" }}>
+                Quiz me!
+              </div>
+              <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.85)', marginTop: 1 }}>
+                Test what you know with fresh questions
+              </div>
+            </div>
+            <div style={{ color: 'rgba(255,255,255,0.8)', fontSize: 18 }}>→</div>
+          </div>
+        </Link>
+
         {/* ── READ & DISCOVER ── */}
         <div style={{ background: '#fff', borderRadius: 20, marginBottom: 12, boxShadow: '0 2px 12px rgba(45,42,38,0.06)', overflow: 'hidden' }}>
           <button onClick={() => setExpandedSection(expandedSection === 'read' ? null : 'read')} style={{
