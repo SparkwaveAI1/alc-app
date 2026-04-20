@@ -12,9 +12,9 @@
  */
 
 const PROVIDER = (process.env.AI_PROVIDER || 'gemini').trim().toLowerCase()
-const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash'
-const OPENROUTER_MODEL = process.env.OPENROUTER_MODEL || 'google/gemini-2.0-flash-001'
-const MINIMAX_MODEL = process.env.MINIMAX_MODEL || 'MiniMax-VL-01'
+const GEMINI_MODEL = (process.env.GEMINI_MODEL || 'gemini-2.5-flash').trim()
+const OPENROUTER_MODEL = (process.env.OPENROUTER_MODEL || 'openai/gpt-4o-mini').trim()
+const MINIMAX_MODEL = (process.env.MINIMAX_MODEL || 'MiniMax-VL-01').trim()
 
 const MINIMAX_BASE_URL = 'https://api.minimax.io/v1'
 
