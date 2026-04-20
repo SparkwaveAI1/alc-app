@@ -107,6 +107,22 @@ export default function TodayPage() {
           </Link>
         )}
 
+        {/* Flashcard hub — always visible */}
+        <Link href="/flashcards" style={{ textDecoration: 'none' }}>
+          <div style={{ background: '#fff', borderRadius: 20, padding: '16px 20px', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 14, boxShadow: '0 2px 12px rgba(45,42,38,0.06)', borderLeft: '4px solid #7C5CBF' }}>
+            <div style={{ fontSize: 32 }}>🗂️</div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontWeight: 700, fontSize: 15, color: '#2D2A26', fontFamily: "'Nunito', sans-serif" }}>
+                My Flashcards
+              </div>
+              <div style={{ fontSize: 12, color: '#6B6560', marginTop: 2 }}>
+                Browse and review cards from all your modules
+              </div>
+            </div>
+            <div style={{ color: '#D1C8D8', fontSize: 18 }}>›</div>
+          </div>
+        </Link>
+
         {/* Daily challenge */}
         {challenge && (
           <div style={{ background: '#fff', borderRadius: 20, padding: '18px 20px', marginBottom: 12, boxShadow: '0 2px 12px rgba(45,42,38,0.06)' }}>
