@@ -13,7 +13,7 @@
 
 const PROVIDER = (process.env.AI_PROVIDER || 'gemini').trim().toLowerCase()
 const GEMINI_MODEL = (process.env.GEMINI_MODEL || 'gemini-2.5-flash').trim()
-const OPENROUTER_MODEL = (process.env.OPENROUTER_MODEL || 'openai/gpt-4o-mini').trim()
+const OPENROUTER_MODEL = (process.env.OPENROUTER_MODEL || 'gpt-4o-mini').trim()
 const MINIMAX_MODEL = (process.env.MINIMAX_MODEL || 'MiniMax-VL-01').trim()
 
 const MINIMAX_BASE_URL = 'https://api.minimax.io/v1'
@@ -204,7 +204,7 @@ export async function visionComplete(options: {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json', 'HTTP-Referer': 'https://alc-app-one.vercel.app', 'X-Title': 'ALC Learning Companion' },
       body: JSON.stringify({
-        model: 'openai/gpt-4o-mini',
+        model: OPENROUTER_MODEL,
         messages: [{ role: 'user', content: [{ type: 'text', text }, { type: 'image_url', image_url: { url: `data:${mimeType};base64,${imageBase64}` } }] }],
         max_tokens: maxTokens,
         temperature,
