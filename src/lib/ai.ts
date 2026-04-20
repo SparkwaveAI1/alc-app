@@ -52,82 +52,93 @@ export async function chatCompleteWithHistory(history: ChatMessage[], newMessage
   const temperature = options?.temperature ?? 0.8
   const maxTokens = options?.maxTokens ?? 400
 
-  if (PROVIDER === 'gemini') {
-    const key = getGeminiKey()
-    if (!key) throw new Error('AI not configured: GOOGLE_GEMINI_API_KEY not set')
-    const url = `https://generativelanguage.googleapis.com/v1/models/${GEMINI_MODEL}:generateContent?key=${key}`
+  // 30s timeout to prevent hanging requests
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 30_000)
 
-    const contents: { role: string; parts: { text: string }[] }[] = []
-    if (options?.system) {
-      contents.push({ role: 'user', parts: [{ text: options.system }] })
+  try {
+    if (PROVIDER === 'gemini') {
+      const key = getGeminiKey()
+      if (!key) throw new Error('AI not configured: GOOGLE_GEMINI_API_KEY not set')
+      const url = `https://generativelanguage.googleapis.com/v1/models/${GEMINI_MODEL}:generateContent?key=${key}`
+
+      const contents: { role: string; parts: { text: string }[] }[] = []
+      if (options?.system) {
+        contents.push({ role: 'user', parts: [{ text: options.system }] })
+      }
+      for (const msg of history) {
+        if (msg.role === 'system') continue
+        contents.push({ role: geminiRole(msg.role), parts: [{ text: msg.content }] })
+      }
+      contents.push({ role: 'user', parts: [{ text: newMessage }] })
+
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents, generationConfig: { temperature, maxOutputTokens: maxTokens } }),
+        signal: controller.signal,
+      })
+
+      const data = await res.json()
+      const content = data.candidates?.[0]?.content?.parts?.[0]?.text
+      if (!content) throw new Error(`Gemini error: ${JSON.stringify(data.error || data).slice(0, 300)}`)
+      return { content, raw: data }
     }
-    for (const msg of history) {
-      if (msg.role === 'system') continue
-      contents.push({ role: geminiRole(msg.role), parts: [{ text: msg.content }] })
+
+    if (PROVIDER === 'minimax') {
+      const key = process.env.MINIMAX_API_KEY || ''
+      if (!key) throw new Error('AI not configured: MINIMAX_API_KEY not set')
+
+      const messages: { role: string; content: string }[] = []
+      if (options?.system) messages.push({ role: 'system', content: options.system })
+      for (const msg of history) {
+        if (msg.role === 'system') continue
+        messages.push({ role: msg.role === 'assistant' ? 'assistant' : 'user', content: msg.content })
+      }
+      messages.push({ role: 'user', content: newMessage })
+
+      const res = await fetch(`${MINIMAX_BASE_URL}/chat/completions`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model: MINIMAX_MODEL || 'MiniMax-M2.7', messages, max_tokens: maxTokens, temperature }),
+        signal: controller.signal,
+      })
+
+      const data = await res.json()
+      const content = data.choices?.[0]?.message?.content
+      if (!content) throw new Error(`MiniMax error: ${JSON.stringify(data).slice(0, 200)}`)
+      return { content, raw: data }
     }
-    contents.push({ role: 'user', parts: [{ text: newMessage }] })
 
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contents, generationConfig: { temperature, maxOutputTokens: maxTokens } }),
-    })
+    if (PROVIDER === 'openrouter') {
+      const key = getOpenRouterKey()
+      if (!key) throw new Error('AI not configured: OPENROUTER_API_KEY not set')
 
-    const data = await res.json()
-    const content = data.candidates?.[0]?.content?.parts?.[0]?.text
-    if (!content) throw new Error(`Gemini error: ${JSON.stringify(data.error || data).slice(0, 300)}`)
-    return { content, raw: data }
+      const messages: { role: string; content: string }[] = []
+      if (options?.system) messages.push({ role: 'system', content: options.system })
+      for (const msg of history) {
+        if (msg.role === 'system') continue
+        messages.push({ role: msg.role === 'assistant' ? 'assistant' : 'user', content: msg.content })
+      }
+      messages.push({ role: 'user', content: newMessage })
+
+      const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json', 'HTTP-Referer': 'https://alc-app-one.vercel.app', 'X-Title': 'ALC Learning Companion' },
+        body: JSON.stringify({ model: OPENROUTER_MODEL, messages, temperature, max_tokens: maxTokens }),
+        signal: controller.signal,
+      })
+
+      const data = await res.json()
+      const content = data.choices?.[0]?.message?.content
+      if (!content) throw new Error(`OpenRouter error: ${JSON.stringify(data).slice(0, 200)}`)
+      return { content, raw: data }
+    }
+
+    throw new Error(`Unknown AI provider: ${PROVIDER}`)
+  } finally {
+    clearTimeout(timeout)
   }
-
-  if (PROVIDER === 'minimax') {
-    const key = process.env.MINIMAX_API_KEY || ''
-    if (!key) throw new Error('AI not configured: MINIMAX_API_KEY not set')
-
-    const messages: { role: string; content: string }[] = []
-    if (options?.system) messages.push({ role: 'system', content: options.system })
-    for (const msg of history) {
-      if (msg.role === 'system') continue
-      messages.push({ role: msg.role === 'assistant' ? 'assistant' : 'user', content: msg.content })
-    }
-    messages.push({ role: 'user', content: newMessage })
-
-    const res = await fetch(`${MINIMAX_BASE_URL}/chat/completions`, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: MINIMAX_MODEL || 'MiniMax-M2.7', messages, max_tokens: maxTokens, temperature }),
-    })
-
-    const data = await res.json()
-    const content = data.choices?.[0]?.message?.content
-    if (!content) throw new Error(`MiniMax error: ${JSON.stringify(data).slice(0, 200)}`)
-    return { content, raw: data }
-  }
-
-  if (PROVIDER === 'openrouter') {
-    const key = getOpenRouterKey()
-    if (!key) throw new Error('AI not configured: OPENROUTER_API_KEY not set')
-
-    const messages: { role: string; content: string }[] = []
-    if (options?.system) messages.push({ role: 'system', content: options.system })
-    for (const msg of history) {
-      if (msg.role === 'system') continue
-      messages.push({ role: msg.role === 'assistant' ? 'assistant' : 'user', content: msg.content })
-    }
-    messages.push({ role: 'user', content: newMessage })
-
-    const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json', 'HTTP-Referer': 'https://alc-app-one.vercel.app', 'X-Title': 'ALC Learning Companion' },
-      body: JSON.stringify({ model: OPENROUTER_MODEL, messages, temperature, max_tokens: maxTokens }),
-    })
-
-    const data = await res.json()
-    const content = data.choices?.[0]?.message?.content
-    if (!content) throw new Error(`OpenRouter error: ${JSON.stringify(data).slice(0, 200)}`)
-    return { content, raw: data }
-  }
-
-  throw new Error(`Unknown AI provider: ${PROVIDER}`)
 }
 
 export async function chatComplete(prompt: string, options?: {
