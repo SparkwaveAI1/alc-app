@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getLearnerContext } from '@/lib/profile'
-
-const GOOGLE_AI_KEY = process.env.GOOGLE_GEMINI_API_KEY!
+import { chatComplete, parseAIJSON } from '@/lib/ai'
 
 export async function POST(req: NextRequest) {
   const { topic_title, overview, subtopics, key_vocabulary, subject_tag } = await req.json()
@@ -33,7 +32,7 @@ Make the questions genuinely test understanding, not just memorization.
 Language should be appropriate for a Grade ${learner?.grade || 4} student.
 Questions should be specific to this topic — not generic.
 
-Return ONLY valid JSON array:
+Return ONLY valid JSON array with exactly 5 questions:
 [
   {
     "type": "multiple_choice",
@@ -57,28 +56,12 @@ Return ONLY valid JSON array:
 ]`
 
   try {
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GOOGLE_AI_KEY}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.7, maxOutputTokens: 1200 }
-        }),
-      }
-    )
-
-    const data = await response.json()
-    const content = data.candidates?.[0]?.content?.parts?.[0]?.text
-    if (!content) return NextResponse.json({ error: 'No response' }, { status: 500 })
-
-    const cleaned = content.replace(/^```json\s*/i, '').replace(/```\s*$/, '').trim()
-    const questions = JSON.parse(cleaned)
-
+    const { content } = await chatComplete(prompt, { temperature: 0.7, maxTokens: 1200 })
+    const questions = parseAIJSON(content)
     return NextResponse.json({ questions })
   } catch (err) {
     console.error('generate-quiz error:', err)
-    return NextResponse.json({ error: String(err) }, { status: 500 })
+    const provider = process.env.AI_PROVIDER || '(not set)'
+    return NextResponse.json({ error: String(err), debug: { provider } }, { status: 500 })
   }
 }
