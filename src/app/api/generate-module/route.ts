@@ -71,6 +71,8 @@ Provide exactly 4-6 subtopics, 6-8 vocabulary words, 3 try-first questions, 3 yo
     return NextResponse.json(parsed)
   } catch (err) {
     console.error('Generate module error:', err)
-    return NextResponse.json({ error: String(err) }, { status: 500 })
+    const provider = process.env.AI_PROVIDER || '(not set)'
+    const hasKey = !!(process.env.OPENROUTER_API_KEY)
+    return NextResponse.json({ error: String(err), debug: { provider, hasKey } }, { status: 500 })
   }
 }
