@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { chatComplete, parseAIJSON } from '@/lib/ai'
 
-const GOOGLE_AI_KEY = process.env.GOOGLE_AI_API_KEY!
 const SB = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL!
 const KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!
 const h = (extra = {}) => ({
@@ -73,24 +73,8 @@ Return ONLY valid JSON, no markdown:
 }`
 
   try {
-    const aiRes = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${GOOGLE_AI_KEY}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.7, maxOutputTokens: 1500 }
-        })
-      }
-    )
-
-    const aiData = await aiRes.json()
-    const content = aiData.candidates?.[0]?.content?.parts?.[0]?.text
-    if (!content) throw new Error('No AI response')
-
-    const cleaned = content.replace(/^```json\s*/i, '').replace(/```\s*$/, '').trim()
-    const compiledContext = JSON.parse(cleaned)
+    const { content } = await chatComplete(prompt, { temperature: 0.7, maxTokens: 1500 })
+    const compiledContext = parseAIJSON<Record<string, unknown>>(content)
     compiledContext.last_updated = new Date().toISOString()
 
     // Save to learner_profile.compiled_context
