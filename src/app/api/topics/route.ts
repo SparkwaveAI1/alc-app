@@ -29,10 +29,9 @@ export async function POST(req: NextRequest) {
 
   const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 
-  // Look up learning_area_id from subject_tag
+  // Look up learning_area_id from subject_tag (match by title, case-insensitive)
   const subjectTag = ai.subject_tag || 'General'
-  const areaSlug = subjectTag.toLowerCase().replace(/\s+/g, '-')
-  const areaRes = await sb(`learning_areas?slug=eq.${areaSlug}&select=id&limit=1`)
+  const areaRes = await sb(`learning_areas?title=ilike.${encodeURIComponent(subjectTag)}&select=id&limit=1`)
   const learningAreaId = Array.isArray(areaRes) && areaRes[0] ? areaRes[0].id : null
 
   // Save topic
