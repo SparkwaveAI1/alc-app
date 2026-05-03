@@ -10,7 +10,7 @@ async function sb(path: string, method = 'GET', body?: object) {
       'apikey': SUPABASE_KEY,
       'Authorization': `Bearer ${SUPABASE_KEY}`,
       'Content-Type': 'application/json',
-      'Prefer': method === 'POST' ? 'return=representation' : '',
+      'Prefer': method === 'POST' ? 'return=representation' : method === 'PATCH' ? 'return=minimal' : '',
     },
     body: body ? JSON.stringify(body) : undefined,
   })
@@ -65,4 +65,20 @@ export async function POST(req: NextRequest) {
   }
 
   return NextResponse.json({ topic })
+}
+
+// PATCH /api/topics — update subtopic content
+export async function PATCH(req: NextRequest) {
+  const { topic_id, subtopics } = await req.json()
+
+  if (!topic_id || !subtopics) {
+    return NextResponse.json({ error: 'topic_id and subtopics required' }, { status: 400 })
+  }
+
+  const result = await sb(`topics?id=eq.${topic_id}`, 'PATCH', {
+    subtopics,
+    updated_at: new Date().toISOString(),
+  })
+
+  return NextResponse.json({ ok: true })
 }
