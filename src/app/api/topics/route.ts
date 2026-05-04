@@ -67,33 +67,7 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // Generate image with timeout
-  let imageUrl: string | null = null
-  try {
-    const result = await Promise.race([
-      (async () => {
-        const key = process.env.WAVESPEED_API_KEY
-        if (!key) return null
-        const res = await fetch('https://api.wavespeed.ai/api/v2/wavespeed-ai/flux-schnell', {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ prompt: `Watercolor illustration for children about "${title}", subject ${ai.subject_tag}, warm colors, educational, no text`, image_size: 'square_hd', num_inference_steps: 4, num_images: 1, enable_sync_mode: true })
-        })
-        const data = await res.json()
-        return data.data?.outputs?.[0] || null
-      })(),
-      new Promise<null>(resolve => setTimeout(() => resolve(null), 20000))
-    ])
-    imageUrl = result as string | null
-  } catch {}
-
-  // Save image_url if we got one
-  if (imageUrl) {
-    await sb(`topics?id=eq.${topic.id}`, 'PATCH', { image_url: imageUrl })
-  }
-
-  // Return topic with image_url included directly
-  return NextResponse.json({ topic: { ...topic, image_url: imageUrl } })
+  return NextResponse.json({ topic })
 }
 
 // PATCH /api/topics — update subtopic content
