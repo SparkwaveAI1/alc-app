@@ -244,32 +244,35 @@ export async function generateImage(prompt: string): Promise<string | null> {
   const key = getGeminiKey()
   if (!key) return null
 
-  // Try Imagen 3 standard first, then fast variant
-  const models = [
-    'imagen-3.0-generate-001',
-    'imagen-3.0-fast-generate-001',
-  ]
-
-  for (const model of models) {
-    try {
-      const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${model}:predict?key=${key}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            instances: [{ prompt }],
-            parameters: { sampleCount: 1 }
-          })
-        }
-      )
-      const data = await res.json()
-      console.log(`[generateImage] ${model} status:`, res.status, data.error?.message || 'ok')
-      const base64 = data.predictions?.[0]?.bytesBase64Encoded
-      if (base64) return base64
-    } catch (err) {
-      console.error(`[generateImage] ${model} failed:`, err)
+  try {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp-image-generation:generateContent?key=${key}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { responseModalities: ['IMAGE', 'TEXT'] }
+        })
+      }
+    )
+    const data = await res.json()
+    console.log('[generateImage] status:', res.status)
+    if (data.error) {
+      console.error('[generateImage] error:', data.error.message)
+      return null
     }
+    // Find the image part in the response
+    const parts = data.candidates?.[0]?.content?.parts || []
+    const imagePart = parts.find((p: any) => p.inlineData?.mimeType?.startsWith('image/'))
+    if (imagePart?.inlineData?.data) {
+      console.log('[generateImage] success, data length:', imagePart.inlineData.data.length)
+      return imagePart.inlineData.data
+    }
+    console.error('[generateImage] no image in response:', JSON.stringify(data).slice(0, 300))
+    return null
+  } catch (err) {
+    console.error('[generateImage] error:', err)
+    return null
   }
-  return null
 }
