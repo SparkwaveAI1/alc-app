@@ -41,6 +41,9 @@ async function generateCoverImage(topicId: string, title: string, subjectTag: st
 
     const fileName = `${topicId}.jpg`
 
+    console.log('[generateCoverImage] uploading to:', `${SUPABASE_URL}/storage/v1/object/topic-images/${fileName}`)
+    console.log('[generateCoverImage] SUPABASE_URL:', SUPABASE_URL?.slice(0, 40))
+
     const uploadRes = await fetch(
       `${SUPABASE_URL}/storage/v1/object/topic-images/${fileName}`,
       {
@@ -50,6 +53,7 @@ async function generateCoverImage(topicId: string, title: string, subjectTag: st
           'Authorization': `Bearer ${SUPABASE_KEY}`,
           'Content-Type': 'image/jpeg',
           'x-upsert': 'true',
+          'cache-control': '3600',
         },
         body: imageBuffer,
       }
