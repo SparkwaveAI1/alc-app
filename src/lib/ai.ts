@@ -248,7 +248,7 @@ export async function generateImage(prompt: string): Promise<string | null> {
   }
 
   try {
-    const res = await fetch('https://api.wavespeed.ai/api/v2/black-forest-labs/flux-1-schnell', {
+    const res = await fetch('https://api.wavespeed.ai/api/v2/wavespeed-ai/flux-schnell', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${key}`,
@@ -259,31 +259,36 @@ export async function generateImage(prompt: string): Promise<string | null> {
         image_size: 'square_hd',
         num_inference_steps: 4,
         num_images: 1,
+        enable_sync_mode: true,
       })
     })
 
     const data = await res.json()
-    console.log('[generateImage] WaveSpeed status:', res.status)
+    console.log('[generateImage] WaveSpeed status:', res.status, 'message:', data.message)
 
     if (!res.ok) {
-      console.error('[generateImage] WaveSpeed error:', JSON.stringify(data).slice(0, 300))
+      console.error('[generateImage] Error:', JSON.stringify(data).slice(0, 300))
       return null
     }
 
-    // WaveSpeed returns a URL, not base64 — fetch the image and convert
     const imageUrl = data.data?.outputs?.[0]
     if (!imageUrl) {
-      console.error('[generateImage] No output URL in response:', JSON.stringify(data).slice(0, 300))
+      console.error('[generateImage] No output URL. Response:', JSON.stringify(data).slice(0, 400))
       return null
     }
 
-    // Download image and convert to base64 for Supabase upload
+    console.log('[generateImage] Got URL:', imageUrl.slice(0, 80))
+
+    // Download and convert to base64 for Supabase upload
     const imageRes = await fetch(imageUrl)
-    if (!imageRes.ok) return null
+    if (!imageRes.ok) {
+      console.error('[generateImage] Failed to download image:', imageRes.status)
+      return null
+    }
 
     const arrayBuffer = await imageRes.arrayBuffer()
     const base64 = Buffer.from(arrayBuffer).toString('base64')
-    console.log('[generateImage] Success, image size:', base64.length)
+    console.log('[generateImage] Success, base64 length:', base64.length)
     return base64
 
   } catch (err) {
