@@ -27,22 +27,17 @@ export async function GET() {
 }
 
 async function generateCoverImage(topicId: string, title: string, subjectTag: string, overview: string) {
+  console.log('[generateCoverImage] Starting for topic:', topicId, title)
   try {
-    console.log('[generateCoverImage] Starting for topic:', topicId)
-    console.log('[generateCoverImage] Gemini key exists:', !!process.env.GOOGLE_GEMINI_API_KEY)
-
-    const prompt = `A beautiful, detailed illustration for a children's learning module about "${title}".
-Subject area: ${subjectTag}.
-Style: watercolor illustration, warm colors, educational, inspiring curiosity, suitable for ages 8-13.
-No text, no letters, no words in the image.
-Overview context: ${overview?.slice(0, 200) || ''}`
+    const prompt = `A beautiful illustration for a children's learning module about "${title}". Subject: ${subjectTag}. Style: watercolor, warm colors, educational, suitable for ages 8-13. No text in the image.`
 
     const base64 = await generateImage(prompt)
-    console.log('[generateCoverImage] base64 result:', base64 ? 'got image (' + base64.length + ' chars)' : 'null')
+    console.log('[generateCoverImage] generateImage result:', base64 ? 'got base64 length ' + base64.length : 'null')
     if (!base64) return
 
-    // Upload to Supabase Storage
     const imageBuffer = Buffer.from(base64, 'base64')
+    console.log('[generateCoverImage] buffer size:', imageBuffer.length)
+
     const fileName = `${topicId}.jpg`
 
     const uploadRes = await fetch(
@@ -59,20 +54,19 @@ Overview context: ${overview?.slice(0, 200) || ''}`
       }
     )
 
-    console.log('[generateCoverImage] upload status:', uploadRes.status)
+    const uploadText = await uploadRes.text()
+    console.log('[generateCoverImage] upload status:', uploadRes.status, 'response:', uploadText.slice(0, 200))
 
-    if (!uploadRes.ok) {
-      console.error('Storage upload failed:', await uploadRes.text())
-      return
-    }
+    if (!uploadRes.ok) return
 
-    // Save public URL back to topic
     const imageUrl = `${SUPABASE_URL}/storage/v1/object/public/topic-images/${fileName}`
+    console.log('[generateCoverImage] saving image_url:', imageUrl)
 
-    await sb(`topics?id=eq.${topicId}`, 'PATCH', { image_url: imageUrl })
+    const patchRes = await sb(`topics?id=eq.${topicId}`, 'PATCH', { image_url: imageUrl })
+    console.log('[generateCoverImage] patch result:', JSON.stringify(patchRes).slice(0, 200))
 
   } catch (err) {
-    console.error('generateCoverImage error:', err)
+    console.error('[generateCoverImage] error:', err)
   }
 }
 
