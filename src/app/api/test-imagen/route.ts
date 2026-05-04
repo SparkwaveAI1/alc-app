@@ -1,32 +1,30 @@
 import { NextResponse } from 'next/server'
 
 export async function GET() {
-  const key = process.env.GOOGLE_GEMINI_API_KEY || process.env.GEMINI_API_KEY || ''
-
-  const results: Record<string, unknown> = { keyExists: !!key, keyPrefix: key.slice(0, 10) + '...' }
+  const key = process.env.WAVESPEED_API_KEY
+  const results: Record<string, unknown> = { keyExists: !!key, keyPrefix: key ? key.slice(0, 8) + '...' : 'missing' }
 
   try {
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp-image-generation:generateContent?key=${key}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: 'A simple red circle on white background' }] }],
-          generationConfig: { responseModalities: ['IMAGE', 'TEXT'] }
-        })
-      }
-    )
+    const res = await fetch('https://api.wavespeed.ai/api/v2/black-forest-labs/flux-1-schnell', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${key}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        prompt: 'A simple red circle on white background',
+        image_size: 'square_hd',
+        num_inference_steps: 4,
+        num_images: 1,
+      })
+    })
+
     const data = await res.json()
     results.status = res.status
-    results.error = data.error?.message
-    results.candidateCount = data.candidates?.length
-    const parts = data.candidates?.[0]?.content?.parts || []
-    results.partTypes = parts.map((p: any) => Object.keys(p))
-    results.hasImagePart = parts.some((p: any) => p.inlineData?.mimeType?.startsWith('image/'))
-    results.rawResponseSlice = JSON.stringify(data).slice(0, 500)
+    results.response = JSON.stringify(data).slice(0, 500)
+    results.outputUrl = data.data?.outputs?.[0] || data.outputs?.[0] || null
   } catch (err) {
-    results.exception = String(err)
+    results.error = String(err)
   }
 
   return NextResponse.json(results)
