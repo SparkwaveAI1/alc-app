@@ -241,36 +241,51 @@ export function parseAIJSON<T>(content: string): T {
 }
 
 export async function generateImage(prompt: string): Promise<string | null> {
-  const key = getGeminiKey()
-  if (!key) return null
+  const key = process.env.WAVESPEED_API_KEY
+  if (!key) {
+    console.error('[generateImage] WAVESPEED_API_KEY not set')
+    return null
+  }
 
   try {
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp-image-generation:generateContent?key=${key}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { responseModalities: ['IMAGE', 'TEXT'] }
-        })
-      }
-    )
+    const res = await fetch('https://api.wavespeed.ai/api/v2/black-forest-labs/flux-1-schnell', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${key}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        prompt,
+        image_size: 'square_hd',
+        num_inference_steps: 4,
+        num_images: 1,
+      })
+    })
+
     const data = await res.json()
-    console.log('[generateImage] status:', res.status)
-    if (data.error) {
-      console.error('[generateImage] error:', data.error.message)
+    console.log('[generateImage] WaveSpeed status:', res.status)
+
+    if (!res.ok) {
+      console.error('[generateImage] WaveSpeed error:', JSON.stringify(data).slice(0, 300))
       return null
     }
-    // Find the image part in the response
-    const parts = data.candidates?.[0]?.content?.parts || []
-    const imagePart = parts.find((p: any) => p.inlineData?.mimeType?.startsWith('image/'))
-    if (imagePart?.inlineData?.data) {
-      console.log('[generateImage] success, data length:', imagePart.inlineData.data.length)
-      return imagePart.inlineData.data
+
+    // WaveSpeed returns a URL, not base64 — fetch the image and convert
+    const imageUrl = data.data?.outputs?.[0]
+    if (!imageUrl) {
+      console.error('[generateImage] No output URL in response:', JSON.stringify(data).slice(0, 300))
+      return null
     }
-    console.error('[generateImage] no image in response:', JSON.stringify(data).slice(0, 300))
-    return null
+
+    // Download image and convert to base64 for Supabase upload
+    const imageRes = await fetch(imageUrl)
+    if (!imageRes.ok) return null
+
+    const arrayBuffer = await imageRes.arrayBuffer()
+    const base64 = Buffer.from(arrayBuffer).toString('base64')
+    console.log('[generateImage] Success, image size:', base64.length)
+    return base64
+
   } catch (err) {
     console.error('[generateImage] error:', err)
     return null
