@@ -91,7 +91,7 @@ export async function POST(req: NextRequest) {
     // Step 3: Download from WaveSpeed and upload to Supabase Storage
     const imageRes = await fetch(wavespeedUrl)
     if (!imageRes.ok) throw new Error(`WaveSpeed download failed: ${imageRes.status}`)
-    const imageBuffer = await imageRes.arrayBuffer()
+    const imageBuffer = Buffer.from(await imageRes.arrayBuffer())
 
     const fileName = `${topic_id}-${Date.now()}.jpg`
 
