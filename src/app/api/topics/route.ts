@@ -26,6 +26,9 @@ export async function GET() {
 
 async function generateCoverImage(topicId: string, title: string, subjectTag: string, overview: string) {
   try {
+    console.log('[generateCoverImage] Starting for topic:', topicId)
+    console.log('[generateCoverImage] Gemini key exists:', !!process.env.GOOGLE_GEMINI_API_KEY)
+
     const prompt = `A beautiful, detailed illustration for a children's learning module about "${title}".
 Subject area: ${subjectTag}.
 Style: watercolor illustration, warm colors, educational, inspiring curiosity, suitable for ages 8-13.
@@ -33,6 +36,7 @@ No text, no letters, no words in the image.
 Overview context: ${overview?.slice(0, 200) || ''}`
 
     const base64 = await generateImage(prompt)
+    console.log('[generateCoverImage] base64 result:', base64 ? 'got image (' + base64.length + ' chars)' : 'null')
     if (!base64) return
 
     // Upload to Supabase Storage
@@ -52,6 +56,8 @@ Overview context: ${overview?.slice(0, 200) || ''}`
         body: imageBuffer,
       }
     )
+
+    console.log('[generateCoverImage] upload status:', uploadRes.status)
 
     if (!uploadRes.ok) {
       console.error('Storage upload failed:', await uploadRes.text())
