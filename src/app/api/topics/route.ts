@@ -27,6 +27,7 @@ export async function GET() {
 }
 
 async function generateCoverImage(topicId: string, title: string, subjectTag: string, overview: string) {
+  console.log('[generateCoverImage] Function called for:', topicId)
   console.log('[generateCoverImage] Starting for topic:', topicId, title)
   try {
     const prompt = `A beautiful illustration for a children's learning module about "${title}". Subject: ${subjectTag}. Style: watercolor, warm colors, educational, suitable for ages 8-13. No text in the image.`
@@ -112,12 +113,14 @@ export async function POST(req: NextRequest) {
   }
 
   // Generate image synchronously with timeout
+  console.log('[topics POST] About to generate image for topic:', topic.id)
   try {
     await Promise.race([
       generateCoverImage(topic.id, title, ai.subject_tag, ai.overview),
       new Promise(resolve => setTimeout(resolve, 15000)) // 15s timeout
     ])
   } catch {}
+  console.log('[topics POST] Image generation block completed')
 
   // Fetch the updated topic with image_url
   const [updatedTopic] = await sb(`topics?id=eq.${topic.id}&select=*`)
