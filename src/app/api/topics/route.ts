@@ -87,7 +87,7 @@ export async function POST(req: NextRequest) {
   const learningAreaId = Array.isArray(areaRes) && areaRes[0] ? areaRes[0].id : null
 
   // Save topic
-  const [topic] = await sb('topics', 'POST', {
+  const topicResult = await sb('topics', 'POST', {
     title,
     slug,
     description,
@@ -101,6 +101,7 @@ export async function POST(req: NextRequest) {
     parent_topic_id: parent_id || null,
     ai_generated: true,
   })
+  const topic = Array.isArray(topicResult) ? topicResult[0] : null
 
   if (!topic?.id) return NextResponse.json({ error: 'Failed to save topic' }, { status: 500 })
 
@@ -127,7 +128,8 @@ export async function POST(req: NextRequest) {
   console.log('[topics POST] Image generation block completed')
 
   // Fetch the updated topic with image_url
-  const [updatedTopic] = await sb(`topics?id=eq.${topic.id}&select=*`)
+  const updatedResult = await sb(`topics?id=eq.${topic.id}&select=*`)
+  const updatedTopic = Array.isArray(updatedResult) ? updatedResult[0] : null
   return NextResponse.json({ topic: updatedTopic || topic })
 }
 
