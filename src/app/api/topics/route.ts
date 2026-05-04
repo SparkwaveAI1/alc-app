@@ -25,45 +25,6 @@ export async function GET() {
   return NextResponse.json(topics)
 }
 
-async function generateCoverImage(topicId: string, title: string, subjectTag: string, overview: string) {
-  console.log('[generateCoverImage] Starting for:', title)
-  try {
-    const prompt = `A beautiful illustration for a children's learning module about "${title}". Subject: ${subjectTag}. Style: watercolor, warm colors, educational, suitable for ages 8-13. No text in the image.`
-
-    const key = process.env.WAVESPEED_API_KEY
-    if (!key) return
-
-    const res = await fetch('https://api.wavespeed.ai/api/v2/wavespeed-ai/flux-schnell', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${key}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        prompt,
-        image_size: 'square_hd',
-        num_inference_steps: 4,
-        num_images: 1,
-        enable_sync_mode: true,
-      })
-    })
-
-    const data = await res.json()
-    const imageUrl = data.data?.outputs?.[0]
-
-    console.log('[generateCoverImage] imageUrl:', imageUrl ? imageUrl.slice(0, 80) : 'null')
-
-    if (!imageUrl) return
-
-    // Save URL directly to topic — no Supabase Storage needed
-    await sb(`topics?id=eq.${topicId}`, 'PATCH', { image_url: imageUrl })
-    console.log('[generateCoverImage] Saved image_url to topic')
-
-  } catch (err) {
-    console.error('[generateCoverImage] error:', err)
-  }
-}
-
 // POST /api/topics — create a topic with AI content + flashcards
 export async function POST(req: NextRequest) {
   const { title, description, ai, parent_id } = await req.json()
@@ -106,20 +67,33 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // Generate image synchronously with timeout
-  console.log('[topics POST] About to generate image for topic:', topic.id)
+  // Generate image with timeout
+  let imageUrl: string | null = null
   try {
-    await Promise.race([
-      generateCoverImage(topic.id, title, ai.subject_tag, ai.overview),
-      new Promise(resolve => setTimeout(resolve, 15000)) // 15s timeout
+    const result = await Promise.race([
+      (async () => {
+        const key = process.env.WAVESPEED_API_KEY
+        if (!key) return null
+        const res = await fetch('https://api.wavespeed.ai/api/v2/wavespeed-ai/flux-schnell', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt: `Watercolor illustration for children about "${title}", subject ${ai.subject_tag}, warm colors, educational, no text`, image_size: 'square_hd', num_inference_steps: 4, num_images: 1, enable_sync_mode: true })
+        })
+        const data = await res.json()
+        return data.data?.outputs?.[0] || null
+      })(),
+      new Promise<null>(resolve => setTimeout(() => resolve(null), 20000))
     ])
+    imageUrl = result as string | null
   } catch {}
-  console.log('[topics POST] Image generation block completed')
 
-  // Fetch the updated topic with image_url
-  const updatedResult = await sb(`topics?id=eq.${topic.id}&select=*`)
-  const updatedTopic = Array.isArray(updatedResult) ? updatedResult[0] : null
-  return NextResponse.json({ topic: updatedTopic || topic })
+  // Save image_url if we got one
+  if (imageUrl) {
+    await sb(`topics?id=eq.${topic.id}`, 'PATCH', { image_url: imageUrl })
+  }
+
+  // Return topic with image_url included directly
+  return NextResponse.json({ topic: { ...topic, image_url: imageUrl } })
 }
 
 // PATCH /api/topics — update subtopic content
