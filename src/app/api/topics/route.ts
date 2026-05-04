@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { generateImage } from '@/lib/ai'
 
 export const maxDuration = 30 // 30 second function timeout
 
@@ -27,48 +26,38 @@ export async function GET() {
 }
 
 async function generateCoverImage(topicId: string, title: string, subjectTag: string, overview: string) {
-  console.log('[generateCoverImage] Function called for:', topicId)
-  console.log('[generateCoverImage] Starting for topic:', topicId, title)
+  console.log('[generateCoverImage] Starting for:', title)
   try {
     const prompt = `A beautiful illustration for a children's learning module about "${title}". Subject: ${subjectTag}. Style: watercolor, warm colors, educational, suitable for ages 8-13. No text in the image.`
 
-    const base64 = await generateImage(prompt)
-    console.log('[generateCoverImage] generateImage result:', base64 ? 'got base64 length ' + base64.length : 'null')
-    if (!base64) return
+    const key = process.env.WAVESPEED_API_KEY
+    if (!key) return
 
-    const imageBuffer = Buffer.from(base64, 'base64')
-    console.log('[generateCoverImage] buffer size:', imageBuffer.length)
+    const res = await fetch('https://api.wavespeed.ai/api/v2/wavespeed-ai/flux-schnell', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${key}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        prompt,
+        image_size: 'square_hd',
+        num_inference_steps: 4,
+        num_images: 1,
+        enable_sync_mode: true,
+      })
+    })
 
-    const fileName = `${topicId}.jpg`
+    const data = await res.json()
+    const imageUrl = data.data?.outputs?.[0]
 
-    console.log('[generateCoverImage] uploading to:', `${SUPABASE_URL}/storage/v1/object/topic-images/${fileName}`)
-    console.log('[generateCoverImage] SUPABASE_URL:', SUPABASE_URL?.slice(0, 40))
+    console.log('[generateCoverImage] imageUrl:', imageUrl ? imageUrl.slice(0, 80) : 'null')
 
-    const uploadRes = await fetch(
-      `${SUPABASE_URL}/storage/v1/object/topic-images/${fileName}`,
-      {
-        method: 'POST',
-        headers: {
-          'apikey': SUPABASE_KEY,
-          'Authorization': `Bearer ${SUPABASE_KEY}`,
-          'Content-Type': 'image/jpeg',
-          'x-upsert': 'true',
-          'cache-control': '3600',
-        },
-        body: imageBuffer,
-      }
-    )
+    if (!imageUrl) return
 
-    const uploadText = await uploadRes.text()
-    console.log('[generateCoverImage] upload status:', uploadRes.status, 'response:', uploadText.slice(0, 200))
-
-    if (!uploadRes.ok) return
-
-    const imageUrl = `${SUPABASE_URL}/storage/v1/object/public/topic-images/${fileName}`
-    console.log('[generateCoverImage] saving image_url:', imageUrl)
-
-    const patchRes = await sb(`topics?id=eq.${topicId}`, 'PATCH', { image_url: imageUrl })
-    console.log('[generateCoverImage] patch result:', JSON.stringify(patchRes).slice(0, 200))
+    // Save URL directly to topic — no Supabase Storage needed
+    await sb(`topics?id=eq.${topicId}`, 'PATCH', { image_url: imageUrl })
+    console.log('[generateCoverImage] Saved image_url to topic')
 
   } catch (err) {
     console.error('[generateCoverImage] error:', err)
