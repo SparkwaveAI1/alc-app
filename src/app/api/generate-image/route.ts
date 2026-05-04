@@ -77,11 +77,39 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Timed out waiting for image' }, { status: 500 })
     }
 
-    // Step 3: Save to topic
-    await sb(`topics?id=eq.${topic_id}`, 'PATCH', { image_url: imageUrl })
-    console.log('[generate-image] saved image_url:', imageUrl.slice(0, 80))
+    // Step 3: Upload to Supabase Storage for permanent URL
+    const imageRes = await fetch(imageUrl)
+    const arrayBuffer = await imageRes.arrayBuffer()
+    const imageBuffer = Buffer.from(arrayBuffer)
+    const fileName = `${topic_id}.jpg`
 
-    return NextResponse.json({ image_url: imageUrl })
+    const uploadRes = await fetch(
+      `${SUPABASE_URL}/storage/v1/object/topic-images/${fileName}`,
+      {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${SUPABASE_KEY}`,
+          'Content-Type': 'image/jpeg',
+          'x-upsert': 'true',
+        },
+        body: imageBuffer,
+      }
+    )
+
+    const uploadText = await uploadRes.text()
+    console.log('[generate-image] storage upload:', uploadRes.status, uploadText.slice(0, 100))
+
+    // Use permanent Supabase URL if upload succeeded, otherwise fall back to WaveSpeed URL
+    const permanentUrl = uploadRes.ok
+      ? `${SUPABASE_URL}/storage/v1/object/public/topic-images/${fileName}`
+      : imageUrl
+
+    // Step 4: Save to topic
+    await sb(`topics?id=eq.${topic_id}`, 'PATCH', { image_url: permanentUrl })
+    console.log('[generate-image] saved image_url:', permanentUrl.slice(0, 80))
+
+    return NextResponse.json({ image_url: permanentUrl })
 
   } catch (err) {
     console.error('[generate-image] error:', err)
