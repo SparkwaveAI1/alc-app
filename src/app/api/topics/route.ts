@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { generateImage } from '@/lib/ai'
 
+export const maxDuration = 30 // 30 second function timeout
+
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL!
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
@@ -103,9 +105,6 @@ export async function POST(req: NextRequest) {
 
   if (!topic?.id) return NextResponse.json({ error: 'Failed to save topic' }, { status: 500 })
 
-  // Generate cover image in background — don't block the response
-  generateCoverImage(topic.id, title, ai.subject_tag, ai.overview).catch(() => {})
-
   // Save flashcards
   if (ai.flashcard_seeds?.length) {
     for (const c of ai.flashcard_seeds) {
@@ -118,7 +117,17 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  return NextResponse.json({ topic })
+  // Generate image synchronously with timeout
+  try {
+    await Promise.race([
+      generateCoverImage(topic.id, title, ai.subject_tag, ai.overview),
+      new Promise(resolve => setTimeout(resolve, 15000)) // 15s timeout
+    ])
+  } catch {}
+
+  // Fetch the updated topic with image_url
+  const [updatedTopic] = await sb(`topics?id=eq.${topic.id}&select=*`)
+  return NextResponse.json({ topic: updatedTopic || topic })
 }
 
 // PATCH /api/topics — update subtopic content
