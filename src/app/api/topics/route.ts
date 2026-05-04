@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { generateImage } from '@/lib/ai'
 
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL!
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -21,6 +22,50 @@ async function sb(path: string, method = 'GET', body?: object) {
 export async function GET() {
   const topics = await sb('topics?order=created_at.desc&select=*')
   return NextResponse.json(topics)
+}
+
+async function generateCoverImage(topicId: string, title: string, subjectTag: string, overview: string) {
+  try {
+    const prompt = `A beautiful, detailed illustration for a children's learning module about "${title}".
+Subject area: ${subjectTag}.
+Style: watercolor illustration, warm colors, educational, inspiring curiosity, suitable for ages 8-13.
+No text, no letters, no words in the image.
+Overview context: ${overview?.slice(0, 200) || ''}`
+
+    const base64 = await generateImage(prompt)
+    if (!base64) return
+
+    // Upload to Supabase Storage
+    const imageBuffer = Buffer.from(base64, 'base64')
+    const fileName = `${topicId}.jpg`
+
+    const uploadRes = await fetch(
+      `${SUPABASE_URL}/storage/v1/object/topic-images/${fileName}`,
+      {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${SUPABASE_KEY}`,
+          'Content-Type': 'image/jpeg',
+          'x-upsert': 'true',
+        },
+        body: imageBuffer,
+      }
+    )
+
+    if (!uploadRes.ok) {
+      console.error('Storage upload failed:', await uploadRes.text())
+      return
+    }
+
+    // Save public URL back to topic
+    const imageUrl = `${SUPABASE_URL}/storage/v1/object/public/topic-images/${fileName}`
+
+    await sb(`topics?id=eq.${topicId}`, 'PATCH', { image_url: imageUrl })
+
+  } catch (err) {
+    console.error('generateCoverImage error:', err)
+  }
 }
 
 // POST /api/topics — create a topic with AI content + flashcards
@@ -51,6 +96,9 @@ export async function POST(req: NextRequest) {
   })
 
   if (!topic?.id) return NextResponse.json({ error: 'Failed to save topic' }, { status: 500 })
+
+  // Generate cover image in background — don't block the response
+  generateCoverImage(topic.id, title, ai.subject_tag, ai.overview).catch(() => {})
 
   // Save flashcards
   if (ai.flashcard_seeds?.length) {

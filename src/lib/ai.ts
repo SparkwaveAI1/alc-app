@@ -239,3 +239,33 @@ export function parseAIJSON<T>(content: string): T {
   const cleaned = content.replace(/^```json\s*/i, '').replace(/```\s*$/, '').trim()
   return JSON.parse(cleaned) as T
 }
+
+export async function generateImage(prompt: string): Promise<string | null> {
+  const key = getGeminiKey()
+  if (!key) return null
+
+  try {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-001:predict?key=${key}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          instances: [{ prompt }],
+          parameters: { sampleCount: 1 }
+        })
+      }
+    )
+    const data = await res.json()
+    // Imagen returns base64 encoded image
+    const base64 = data.predictions?.[0]?.bytesBase64Encoded
+    if (!base64) {
+      console.error('Imagen error:', JSON.stringify(data).slice(0, 300))
+      return null
+    }
+    return base64
+  } catch (err) {
+    console.error('generateImage error:', err)
+    return null
+  }
+}
