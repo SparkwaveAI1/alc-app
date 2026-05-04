@@ -83,10 +83,15 @@ export async function POST(req: NextRequest) {
     const imageBuffer = Buffer.from(arrayBuffer)
     const fileName = `${topic_id}.jpg`
 
+    console.log('[generate-image] SUPABASE_URL:', SUPABASE_URL?.slice(0, 50))
+    console.log('[generate-image] SUPABASE_KEY exists:', !!SUPABASE_KEY)
+    console.log('[generate-image] upload URL:', `${SUPABASE_URL}/storage/v1/object/topic-images/${fileName}`)
+    console.log('[generate-image] buffer size:', imageBuffer.length)
+
     const uploadRes = await fetch(
       `${SUPABASE_URL}/storage/v1/object/topic-images/${fileName}`,
       {
-        method: 'POST',
+        method: 'PUT',
         headers: {
           'apikey': SUPABASE_KEY,
           'Authorization': `Bearer ${SUPABASE_KEY}`,
@@ -98,7 +103,8 @@ export async function POST(req: NextRequest) {
     )
 
     const uploadText = await uploadRes.text()
-    console.log('[generate-image] storage upload:', uploadRes.status, uploadText.slice(0, 100))
+    console.log('[generate-image] upload status:', uploadRes.status)
+    console.log('[generate-image] upload response:', uploadText)
 
     // Use permanent Supabase URL if upload succeeded, otherwise fall back to WaveSpeed URL
     const permanentUrl = uploadRes.ok
