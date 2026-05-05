@@ -53,7 +53,11 @@ export async function POST(req: NextRequest) {
   })
   const topic = Array.isArray(topicResult) ? topicResult[0] : null
 
-  if (!topic?.id) return NextResponse.json({ error: 'Failed to save topic' }, { status: 500 })
+  if (!topic?.id) {
+    console.error('[topics] POST insert failed. topicResult:', JSON.stringify(topicResult))
+    console.error('[topics] payload sent:', JSON.stringify({ title, slug, subject_tag: subjectTag, learning_area_id: learningAreaId }))
+    return NextResponse.json({ error: 'Failed to save topic', supabase_response: topicResult }, { status: 500 })
+  }
 
   // Save flashcards
   if (ai.flashcard_seeds?.length) {
