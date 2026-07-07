@@ -26,7 +26,8 @@ async function sb(path: string, method = 'GET', body?: object) {
     },
     body: body ? JSON.stringify(body) : undefined,
   })
-  return res.json()
+  const text = await res.text()
+  return text ? JSON.parse(text) : null // PATCH with return=minimal has no body
 }
 
 export async function POST(req: NextRequest) {
