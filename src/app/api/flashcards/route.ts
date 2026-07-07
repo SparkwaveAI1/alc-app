@@ -18,16 +18,21 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  // topic_id is optional — camera discoveries save cards before a module exists
   const { topic_id, front, back, card_type = 'fact' } = await req.json()
-  if (!topic_id || !front || !back) {
-    return NextResponse.json({ error: 'topic_id, front, and back required' }, { status: 400 })
+  if (!front || !back) {
+    return NextResponse.json({ error: 'front and back required' }, { status: 400 })
   }
   const res = await fetch(`${SB}/rest/v1/flashcards`, {
     method: 'POST',
     headers: h({ 'Prefer': 'return=representation' }),
-    body: JSON.stringify({ topic_id, front, back, card_type }),
+    body: JSON.stringify({ topic_id: topic_id || null, front, back, card_type }),
   })
-  const [card] = await res.json()
+  const data = await res.json()
+  if (!res.ok) {
+    return NextResponse.json({ error: data?.message || 'Save failed' }, { status: 500 })
+  }
+  const [card] = Array.isArray(data) ? data : [data]
   return NextResponse.json({ card })
 }
 
