@@ -29,12 +29,15 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   const { title, description, ai, parent_id } = await req.json()
 
-  const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+  const baseSlug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 
-  // Look up learning_area_id from subject_tag (match by title, case-insensitive)
+  // Slugs are unique — suffix if this one is already taken
+  const existing = await sb(`topics?slug=like.${encodeURIComponent(baseSlug)}*&select=slug`)
+  const taken = new Set(Array.isArray(existing) ? existing.map((t: { slug: string }) => t.slug) : [])
+  let slug = baseSlug
+  for (let i = 2; taken.has(slug); i++) slug = `${baseSlug}-${i}`
+
   const subjectTag = ai.subject_tag || 'General'
-  const areaRes = await sb(`learning_areas?title=ilike.${encodeURIComponent(subjectTag)}&select=id&limit=1`)
-  const learningAreaId = Array.isArray(areaRes) && areaRes[0] ? areaRes[0].id : null
 
   // Save topic
   const topicResult = await sb('topics', 'POST', {
@@ -43,19 +46,18 @@ export async function POST(req: NextRequest) {
     description,
     overview: ai.overview || ai.fun_fact || title,
     subject_tag: subjectTag,
-    learning_area_id: learningAreaId,
     subtopics: ai.subtopics || [],
     try_first_questions: ai.try_first_questions || [],
     key_vocabulary: ai.key_vocabulary || [],
     fun_fact: ai.fun_fact || null,
-    parent_topic_id: parent_id || null,
+    parent_id: parent_id || null,
     ai_generated: true,
   })
   const topic = Array.isArray(topicResult) ? topicResult[0] : null
 
   if (!topic?.id) {
     console.error('[topics] POST insert failed. topicResult:', JSON.stringify(topicResult))
-    console.error('[topics] payload sent:', JSON.stringify({ title, slug, subject_tag: subjectTag, learning_area_id: learningAreaId }))
+    console.error('[topics] payload sent:', JSON.stringify({ title, slug, subject_tag: subjectTag }))
     return NextResponse.json({ error: 'Failed to save topic', supabase_response: topicResult }, { status: 500 })
   }
 
